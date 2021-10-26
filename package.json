@@ -1,0 +1,68 @@
+{
+    "name": "@immobiliarelabs/fastify-metrics",
+    "version": "1.0.0-0",
+    "description": "Fastify plugin that integrates metrics collection and dispatch to statsd",
+    "main": "index.js",
+    "publishConfig": {
+        "registry": "http://sinopia.rete.farm:4873"
+    },
+    "files": [
+        "index.js",
+        "index.d.ts",
+        "util.js"
+    ],
+    "scripts": {
+        "lint": "eslint --fix --ignore-path .gitignore .",
+        "test": "tsd && nyc --reporter=lcov --reporter=text-summary ava && nyc check-coverage --lines 95",
+        "bench:base": "concurrently -k -s first \"node benchmarks/fixtures/base.js\" \"node -e 'setTimeout(() => {}, 1000)' && npx autocannon -c 100 -d 30 http://localhost:3000\"",
+        "bench": "concurrently -k -s first \"node benchmarks/fixtures/withMetrics.js\" \"node benchmarks/fixtures/statsd.js\" \"node -e 'setTimeout(() => {}, 1000)' && npx autocannon -c 100 -d 30 http://localhost:3001\"",
+        "toc": "markdown-toc -i README.md",
+        "prepare": "is-ci || husky install"
+    },
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/immobiliare/fastify-metrics.git"
+    },
+    "homepage": "https://github.com/immobiliare/fastify-metrics",
+    "bugs": {
+        "url": "https://github.com/immobiliare/fastify-metrics/issues"
+    },
+    "license": "MIT",
+    "engines": {
+        "node": ">=12.19"
+    },
+    "devDependencies": {
+        "@commitlint/cli": "^13.0.0",
+        "@commitlint/config-conventional": "^13.0.0",
+        "@types/node": "^16.3.1",
+        "@typescript-eslint/eslint-plugin": "^5.0.0",
+        "@typescript-eslint/parser": "^5.0.0",
+        "autocannon": "^7.0.0",
+        "ava": "^3.9.0",
+        "concurrently": "^6.0.0",
+        "eslint": "^8.0.0",
+        "eslint-config-prettier": "^8.0.0",
+        "eslint-plugin-node": "^11.1.0",
+        "eslint-plugin-prettier": "^4.0.0",
+        "fastify": "^3.0.2",
+        "husky": "^7.0.0",
+        "is-ci": "^3.0.0",
+        "lint-staged": "^11.0.0",
+        "markdown-toc": "^1.2.0",
+        "nyc": "^15.1.0",
+        "prettier": "^2.0.5",
+        "sinon": "^11.1.2",
+        "tsd": "^0.17.0",
+        "typescript": "^4.3.5"
+    },
+    "dependencies": {
+        "@dnlup/doc": "^3.1.0",
+        "@dnlup/hrtime-utils": "^1.0.1",
+        "@immobiliarelabs/dats": "^3.0.0",
+        "fastify-plugin": "^3.0.0"
+    },
+    "volta": {
+        "node": "16.12.0",
+        "npm": "8.1.1"
+    }
+}
