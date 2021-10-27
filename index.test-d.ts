@@ -1,4 +1,4 @@
-import { expectType, expectError, expectAssignable } from 'tsd';
+import { expectType } from 'tsd';
 
 import Fastify from 'fastify';
 import Client from '@immobiliarelabs/dats';

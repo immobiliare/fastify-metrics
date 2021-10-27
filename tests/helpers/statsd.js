@@ -1,7 +1,3 @@
-/**
- * Copied from
- */
-
 'use strict';
 
 const dgram = require('dgram');

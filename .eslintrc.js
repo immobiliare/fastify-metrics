@@ -7,14 +7,21 @@ module.exports = {
         node: true,
     },
     extends: ['eslint:recommended', 'plugin:prettier/recommended'],
-    parser: '@typescript-eslint/parser',
     parserOptions: {
-        ecmaVersion: 12,
+        ecmaVersion: 13,
     },
-    plugins: ['@typescript-eslint'],
+    overrides: [
+        {
+            files: ['*.ts', '*.tsx'],
+            parser: '@typescript-eslint/parser',
+            plugins: ['@typescript-eslint'],
+            rules: {
+                // Prevent TypeScript-specific constructs from being erroneously flagged as unused
+                '@typescript-eslint/no-unused-vars': 'error',
+            },
+        },
+    ],
     rules: {
         strict: 'error',
-        'no-new': 'error',
-        'no-process-exit': 'off',
     },
 };
