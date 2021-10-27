@@ -39,7 +39,7 @@
         "@typescript-eslint/parser": "^5.0.0",
         "autocannon": "^7.0.0",
         "ava": "^3.9.0",
-        "concurrently": "^6.0.0",
+        "concurrently": "^6.3.0",
         "eslint": "^8.0.0",
         "eslint-config-prettier": "^8.0.0",
         "eslint-plugin-node": "^11.1.0",
