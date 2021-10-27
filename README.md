@@ -1,11 +1,11 @@
 # fastify-metrics
 
-[![code style: prettier](https://img.shields.io/badge/code_style-prettier-ff69b4.svg?style=flat-square)](https://github.com/prettier/prettier)
-[![Commitizen friendly](https://img.shields.io/badge/commitizen-friendly-brightgreen.svg?style=flat-square)](http://commitizen.github.io/cz-cli/)
-
-> [Fastify](https://www.fastify.io/) plugin that integrates metrics collection and dispatch to [statsd](https://github.com/statsd/statsd).
+> A minimalistic and opinionated [Fastify](https://www.fastify.io/) plugin that collects metrics and dispatches them to [statsd](https://github.com/statsd/statsd).
 
 Supports Fastify versions `>=3.0.0`.
+
+If write your services and apps using `Fastify` and also use `statsd`, this plugin might be for you.
+It automatically collects Node.js process metrics along with routes hit count, timings and errors and uses the [`Dats`]() client to send them to a `stasd` collector.
 
 <!-- toc -->
 
