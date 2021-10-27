@@ -17,7 +17,7 @@
         "bench:base": "concurrently -k -s first \"node benchmarks/fixtures/base.js\" \"node -e 'setTimeout(() => {}, 1000)' && npx autocannon -c 100 -d 30 http://localhost:3000\"",
         "bench": "concurrently -k -s first \"node benchmarks/fixtures/withMetrics.js\" \"node benchmarks/fixtures/statsd.js\" \"node -e 'setTimeout(() => {}, 1000)' && npx autocannon -c 100 -d 30 http://localhost:3001\"",
         "toc": "markdown-toc -i README.md",
-        "prepare": "is-ci || husky install"
+        "prepare": "node prepare.js || echo 'Skipping prepare script'"
     },
     "repository": {
         "type": "git",
