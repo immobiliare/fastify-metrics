@@ -9,7 +9,9 @@ const doc = require('@dnlup/doc');
 const { hrtime2ns, hrtime2ms, hrtime2s } = require('@dnlup/hrtime-utils');
 
 function clientMock() {
-    const mock = {};
+    const mock = {
+        socket: { onError: () => {} },
+    };
     for (const method of ['on', 'counter', 'timing', 'gauge', 'set']) {
         mock[method] = () => {};
     }
@@ -88,7 +90,7 @@ module.exports = fp(
             udpDnsCache,
             udpDnsCacheTTL,
             collect = {},
-            afterSend = (error) => void (error && fastify.log.error(error)),
+            onError = (error) => void fastify.log.error(error),
         },
         next
     ) {
@@ -108,7 +110,7 @@ module.exports = fp(
                   bufferFlushTimeout,
                   udpDnsCache,
                   udpDnsCacheTTL,
-                  afterSend: afterSend,
+                  onError: onError,
               })
             : clientMock();
 
