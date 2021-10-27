@@ -9,16 +9,15 @@ It automatically collects Node.js process metrics along with routes hit count, t
 
 <!-- toc -->
 
-- [fastify-metrics](#fastify-metrics)
-  - [Installation](#installation)
-  - [Usage](#usage)
-    - [Notes](#notes)
-  - [Metrics collected](#metrics-collected)
-  - [Decorators](#decorators)
-  - [Hooks](#hooks)
-  - [API](#api)
-    - [Configuration `options`](#configuration-options)
-  - [Contributing](#contributing)
+-   [Installation](#installation)
+-   [Usage](#usage)
+    -   [Notes](#notes)
+-   [Metrics collected](#metrics-collected)
+-   [Decorators](#decorators)
+-   [Hooks](#hooks)
+-   [API](#api)
+    -   [Configuration `options`](#configuration-options)
+-   [Contributing](#contributing)
 
 <!-- tocstop -->
 
@@ -118,7 +117,7 @@ This module exports a [plugin registration function](https://github.com/fastify/
 -   `bufferSize`: Number. Metrics buffer size. See [dats](https://github.com/immobiliare/dats#new-clientoptions).
 -   `bufferFlushTimeout`: Number. Metrics buffer flush timeout. See [dats](https://github.com/immobiliare/dats#new-clientoptions).
 -   `sampleInterval`: Number. Optional. Sample interval in `ms` used to gather process stats. Defaults to `1000`.
--   `afterSend`: Function: `(err) => void`. Optional. This function is called after each metric send. Default: `(err) => err && log(err)`
+-   `onError`: Function: `(err) => void`. Optional. This function to handle possible Dats errors. Default: `(err) => log(err)`
 -   `udpDnsCache`: Boolean. Optional. Activate udpDnsCache. Default `true`.
 -   `udpDnsCacheTTL`: Number. Optional. DNS cache Time to live of an entry in seconds. Default `120`.
 -   `collect`: Object. Optional. Which metrics the plugin should track.

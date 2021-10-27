@@ -171,7 +171,7 @@ test.serial('should log statsd client errors', async (t) => {
         namespace: 'ns',
     });
     const spy = sinon.spy(server.log, 'error');
-    server.stats.afterSend(new Error('test'));
+    server.stats.socket.onError(new Error('test'));
     t.is('test', spy.getCall(0).firstArg.message);
 });
 
