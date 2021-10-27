@@ -4,7 +4,7 @@
     "description": "Fastify plugin that integrates metrics collection and dispatch to statsd",
     "main": "index.js",
     "publishConfig": {
-        "registry": "http://sinopia.rete.farm:4873"
+        "access": "public"
     },
     "files": [
         "index.js",
@@ -13,7 +13,7 @@
     ],
     "scripts": {
         "lint": "eslint --fix --ignore-path .gitignore .",
-        "test": "tsd && nyc --reporter=lcov --reporter=text-summary ava && nyc check-coverage --lines 95",
+        "test": "tsd && nyc --reporter=lcov --reporter=text-summary ava && nyc check-coverage --lines 100 --branches 100 --functions 100",
         "bench:base": "concurrently -k -s first \"node benchmarks/fixtures/base.js\" \"node -e 'setTimeout(() => {}, 1000)' && npx autocannon -c 100 -d 30 http://localhost:3000\"",
         "bench": "concurrently -k -s first \"node benchmarks/fixtures/withMetrics.js\" \"node benchmarks/fixtures/statsd.js\" \"node -e 'setTimeout(() => {}, 1000)' && npx autocannon -c 100 -d 30 http://localhost:3001\"",
         "toc": "markdown-toc -i README.md",
@@ -58,7 +58,7 @@
     "dependencies": {
         "@dnlup/doc": "^3.1.0",
         "@dnlup/hrtime-utils": "^1.0.1",
-        "@immobiliarelabs/dats": "^3.0.0",
+        "@immobiliarelabs/dats": "^1.0.0",
         "fastify-plugin": "^3.0.0"
     },
     "volta": {

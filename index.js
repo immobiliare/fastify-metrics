@@ -1,6 +1,3 @@
-/**
- * @module fastiy-metrics
- */
 'use strict';
 
 const fp = require('fastify-plugin');
