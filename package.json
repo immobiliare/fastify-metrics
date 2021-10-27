@@ -32,6 +32,14 @@
         "node": ">=12.19"
     },
     "devDependencies": {
+        "@saithodev/semantic-release-backmerge": "^2.0.0",
+        "@scdev/decorate-request-response": "^1.1.0",
+        "@semantic-release/changelog": "^6.0.0",
+        "@semantic-release/commit-analyzer": "^9.0.1",
+        "@semantic-release/git": "^10.0.0",
+        "@semantic-release/github": "^8.0.1",
+        "@semantic-release/npm": "^8.0.2",
+        "@semantic-release/release-notes-generator": "^10.0.2",
         "@commitlint/cli": "^13.0.0",
         "@commitlint/config-conventional": "^13.0.0",
         "@types/node": "^16.3.1",
