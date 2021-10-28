@@ -1,7 +1,7 @@
 {
     "name": "@immobiliarelabs/fastify-metrics",
     "version": "1.0.0-0",
-    "description": "Fastify plugin that integrates metrics collection and dispatch to statsd",
+    "description": "A minimalistic and opinionated Fastify plugin that collects metrics and dispatches them to statsd",
     "main": "index.js",
     "publishConfig": {
         "registry": "http://sinopia.rete.farm:4873"
