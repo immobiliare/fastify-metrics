@@ -9,23 +9,24 @@ It automatically collects Node.js process metrics along with routes hit count, t
 
 <!-- toc -->
 
--   [Installation](#installation)
--   [Usage](#usage)
-    -   [Notes](#notes)
--   [Metrics collected](#metrics-collected)
--   [Decorators](#decorators)
--   [Hooks](#hooks)
--   [API](#api)
-    -   [Configuration `options`](#configuration-options)
--   [Contributing](#contributing)
+- [fastify-metrics](#fastify-metrics)
+  - [Installation](#installation)
+    - [`npm`](#npm)
+    - [`yarn`](#yarn)
+  - [Usage](#usage)
+    - [Notes](#notes)
+  - [Metrics collected](#metrics-collected)
+  - [Decorators](#decorators)
+  - [Hooks](#hooks)
+  - [API](#api)
+    - [Configuration `options`](#configuration-options)
+  - [Contributing](#contributing)
 
 <!-- tocstop -->
 
 ## Installation
 
-The package is available at http://sinopia.rete.farm:4873/#/detail/@immobiliarelabs/fastify-metrics.
-
-You can install it with `npm`
+### `npm`
 
 ```bash
 # lastest stable version
@@ -34,7 +35,7 @@ $ npm i -S @immobiliarelabs/fastify-metrics
 $ npm i -S @immobiliarelabs/fastify-metrics@next
 ```
 
-or `yarn`
+### `yarn`
 
 ```bash
 # lastest stable version
