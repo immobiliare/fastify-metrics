@@ -1,5 +1,7 @@
 # fastify-metrics
 
+<p align="center"><img src="./logo.png" alt="logo" width="250px" /></p>
+
 ![release workflow](https://img.shields.io/github/workflow/status/immobiliare/fastify-metrics/release)
 [![code style: prettier](https://img.shields.io/badge/code_style-prettier-ff69b4.svg?style=flat-square)](https://github.com/prettier/prettier?style=flat-square)
 [![semantic-release](https://img.shields.io/badge/%20%20%F0%9F%93%A6%F0%9F%9A%80-semantic--release-e10079.svg?style=flat-square)](https://github.com/semantic-release/semantic-release)
@@ -8,14 +10,17 @@
 
 > A minimalistic and opinionated [Fastify](https://www.fastify.io/) plugin that collects metrics and dispatches them to [statsd](https://github.com/statsd/statsd).
 
+If you write your services and apps using `Fastify` and also use `statsd`, this plugin might be for you.
+It automatically collects Node.js process metrics along with routes hit count, timings and errors and uses the [`dats`](https://github.com/immobiliare/dats ) client to send them to a `stasd` collector.
+
 It supports Fastify versions `>=3.0.0`.
 
-If you write your services and apps using `Fastify` and also use `statsd`, this plugin might be for you.
-It automatically collects Node.js process metrics along with routes hit count, timings and errors and uses the [`Dats`]() client to send them to a `stasd` collector.
+## Table of Content
 
 <!-- toc -->
 
 - [fastify-metrics](#fastify-metrics)
+  - [Table of Content](#table-of-content)
   - [Installation](#installation)
     - [`npm`](#npm)
     - [`yarn`](#yarn)
