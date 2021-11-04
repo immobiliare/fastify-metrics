@@ -1,6 +1,7 @@
-# fastify-metrics
 
 <p align="center"><img src="./logo.png" alt="logo" width="250px" /></p>
+
+<h1 align="center">fastify-metrics</h1>
 
 ![release workflow](https://img.shields.io/github/workflow/status/immobiliare/fastify-metrics/release)
 [![code style: prettier](https://img.shields.io/badge/code_style-prettier-ff69b4.svg?style=flat-square)](https://github.com/prettier/prettier?style=flat-square)
@@ -19,21 +20,20 @@ It supports Fastify versions `>=3.0.0`.
 
 <!-- toc -->
 
-- [fastify-metrics](#fastify-metrics)
-  - [Table of Content](#table-of-content)
-  - [Installation](#installation)
-    - [`npm`](#npm)
-    - [`yarn`](#yarn)
-  - [Usage](#usage)
-    - [Notes](#notes)
-  - [Metrics collected](#metrics-collected)
-  - [Decorators](#decorators)
-  - [Hooks](#hooks)
-  - [API](#api)
-    - [Configuration `options`](#configuration-options)
-  - [Powered Apps](#powered-apps)
-  - [Support & Contribute](#support--contribute)
-  - [License](#license)
+- [Table of Content](#table-of-content)
+- [Installation](#installation)
+  - [`npm`](#npm)
+  - [`yarn`](#yarn)
+- [Usage](#usage)
+  - [Notes](#notes)
+- [Metrics collected](#metrics-collected)
+- [Decorators](#decorators)
+- [Hooks](#hooks)
+- [API](#api)
+  - [Configuration `options`](#configuration-options)
+- [Powered Apps](#powered-apps)
+- [Support & Contribute](#support--contribute)
+- [License](#license)
 
 <!-- tocstop -->
 
