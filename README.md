@@ -1,4 +1,3 @@
-
 <p align="center"><img src="./logo.png" alt="logo" width="250px" /></p>
 
 <h1 align="center">fastify-metrics</h1>
