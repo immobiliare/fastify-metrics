@@ -1,10 +1,16 @@
 # fastify-metrics
 
+![release workflow](https://img.shields.io/github/workflow/status/immobiliare/fastify-metrics/release)
+[![code style: prettier](https://img.shields.io/badge/code_style-prettier-ff69b4.svg?style=flat-square)](https://github.com/prettier/prettier?style=flat-square)
+[![semantic-release](https://img.shields.io/badge/%20%20%F0%9F%93%A6%F0%9F%9A%80-semantic--release-e10079.svg?style=flat-square)](https://github.com/semantic-release/semantic-release)
+![npm vertsion](https://img.shields.io/npm/v/@immobiliarelabs/fastify-metrics?style=flat-square)
+![license](https://img.shields.io/github/license/immobiliare/fastify-metrics)
+
 > A minimalistic and opinionated [Fastify](https://www.fastify.io/) plugin that collects metrics and dispatches them to [statsd](https://github.com/statsd/statsd).
 
-Supports Fastify versions `>=3.0.0`.
+It supports Fastify versions `>=3.0.0`.
 
-If write your services and apps using `Fastify` and also use `statsd`, this plugin might be for you.
+If you write your services and apps using `Fastify` and also use `statsd`, this plugin might be for you.
 It automatically collects Node.js process metrics along with routes hit count, timings and errors and uses the [`Dats`]() client to send them to a `stasd` collector.
 
 <!-- toc -->
@@ -20,7 +26,9 @@ It automatically collects Node.js process metrics along with routes hit count, t
   - [Hooks](#hooks)
   - [API](#api)
     - [Configuration `options`](#configuration-options)
-  - [Contributing](#contributing)
+  - [Powered Apps](#powered-apps)
+  - [Support & Contribute](#support--contribute)
+  - [License](#license)
 
 <!-- tocstop -->
 
@@ -78,6 +86,8 @@ See https://github.com/fastify/fastify/blob/master/docs/Routes.md#config.
 
 ## Metrics collected
 
+These are the metrics that are collected automatically.
+
 | Name                                                    | Type      | Unit of measure                 | Description                                    |
 | :------------------------------------------------------ | :-------- | :------------------------------ | :--------------------------------------------- |
 | `<METRICS_NAMESPACE>.process.cpu`                       | `gauge`   | percentage                      | process cpu usage                              |
@@ -93,12 +103,16 @@ See https://github.com/fastify/fastify/blob/master/docs/Routes.md#config.
 
 ## Decorators
 
+The plugin adds the following decorators:
+
 -   `fastify.stats`: A [dats](https://github.com/immobiliare/dats) instance
 -   `fastify.hrtime2ns`: A utility function to convert `process.hrtime([time])` to nanoseconds
 -   `fastify.hrtime2ms`: A utility function to convert `process.hrtime([time])` to milliseconds
 -   `fastify.hrtime2s`: A utility function to convert `process.hrtime([time])` to seconds
 
 ## Hooks
+
+The plugin uses the following hooks:
 
 -   `onClose`: To close the [dats](https://github.com/immobiliare/dats) instance
 -   `onRequest`: To count requests
@@ -127,6 +141,22 @@ This module exports a [plugin registration function](https://github.com/fastify/
     -   `collect.errors`: Boolean. Collect errors count (`<METRICS_NAMESPACE>.api.errors.<routeId>.<statusCode>`). Default: `true`.
     -   `collect.health`: Boolean. Collect process health data (`<METRICS_NAMESPACE>.process.*`). Default: `true`.
 
-## Contributing
+## Powered Apps
 
-See [the contributing section](./CONTRIBUTING.md).
+`fastify-metrics` was created by the amazing Node.js team at ImmobiliareLabs, the Tech dept of [Immobiliare.it](https://www.immobiliare.it), the #1 real estate company in Italy.
+
+We are currently using `fastify-metrics` in our products as well as our internal toolings.
+
+**If you are using fastify-metrics in production [drop us a message](mailto://opensource@immobiliare.it)**.
+
+## Support & Contribute
+
+Made with ❤️ by [ImmobiliareLabs](https://github.com/immobiliare) & [Contributors](./CONTRIBUTING.md#contributors)
+
+We'd love for you to contribute to `fastify-metrics`!
+If you have any questions on how to use `fastify-metrics`, bugs and enhancement please feel free to reach out by opening a [GitHub Issue](https://github.com/immobiliare/fastify-metrics/issues).
+
+## License
+
+`fastify-metrics` is licensed under the MIT license.  
+See the [LICENSE](./LICENSE) file for more information.

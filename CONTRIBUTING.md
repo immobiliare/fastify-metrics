@@ -31,3 +31,10 @@ Style and lint errors should be fixed with
 ```bash
 $ npm run lint
 ```
+
+## Contributors
+
+@JellyBellyDev  
+@simonecorsi  
+@dnlup  
+@antoniomuso
