@@ -10,8 +10,9 @@
 
 > A minimalistic and opinionated [Fastify](https://www.fastify.io/) plugin that collects metrics and dispatches them to [statsd](https://github.com/statsd/statsd).
 
-If you write your services and apps using `Fastify` and also use `statsd`, this plugin might be for you.
-It automatically collects Node.js process metrics along with routes hit count, timings and errors and uses the [`dats`](https://github.com/immobiliare/dats ) client to send them to a `stasd` collector.
+If you write your services and apps using `Fastify` and also use `statsd`, this plugin might be for you!
+
+It automatically collects Node.js process metrics along with routes hit count, timings and errors and uses the [`dats`](https://github.com/immobiliare/dats) client to send them to a `stasd` collector.
 
 It supports Fastify versions `>=3.0.0`.
 
@@ -19,20 +20,19 @@ It supports Fastify versions `>=3.0.0`.
 
 <!-- toc -->
 
-- [Table of Content](#table-of-content)
-- [Installation](#installation)
-  - [`npm`](#npm)
-  - [`yarn`](#yarn)
-- [Usage](#usage)
-  - [Notes](#notes)
-- [Metrics collected](#metrics-collected)
-- [Decorators](#decorators)
-- [Hooks](#hooks)
-- [API](#api)
-  - [Configuration `options`](#configuration-options)
-- [Powered Apps](#powered-apps)
-- [Support & Contribute](#support--contribute)
-- [License](#license)
+-   [Installation](#installation)
+    -   [`npm`](#npm)
+    -   [`yarn`](#yarn)
+-   [Usage](#usage)
+    -   [Notes](#notes)
+-   [Metrics collected](#metrics-collected)
+-   [Decorators](#decorators)
+-   [Hooks](#hooks)
+-   [API](#api)
+    -   [Configuration `options`](#configuration-options)
+-   [Powered Apps](#powered-apps)
+-   [Support & Contribute](#support--contribute)
+-   [License](#license)
 
 <!-- tocstop -->
 
