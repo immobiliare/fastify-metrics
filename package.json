@@ -6,6 +6,19 @@
     "publishConfig": {
         "access": "public"
     },
+    "keywords": [
+        "nodejs",
+        "javascript",
+        "npm",
+        "metrics",
+        "grafana",
+        "statsd",
+        "fastify",
+        "gauge",
+        "timing",
+        "stats",
+        "counter"
+    ],
     "files": [
         "index.js",
         "index.d.ts",
