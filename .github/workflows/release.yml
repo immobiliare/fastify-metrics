@@ -38,6 +38,9 @@ jobs:
                   token: ${{ secrets.GITHUB_TOKEN }}
 
             - uses: bahmutov/npm-install@v1
+              with:
+                  useLockFile: false
+
             - name: Semantic release
               uses: codfish/semantic-release-action@v1
               env:
