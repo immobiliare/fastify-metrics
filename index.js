@@ -1,5 +1,6 @@
 'use strict';
 
+const { hrtime } = require('process');
 const fp = require('fastify-plugin');
 const { default: Client } = require('@immobiliarelabs/dats');
 const doc = require('@dnlup/doc');
@@ -18,6 +19,12 @@ function clientMock() {
         return setImmediate(done);
     };
     return mock;
+}
+
+function validateString(value) {
+    if (typeof value !== 'string' || value === '') {
+        throw new Error('A string value is required to name the metric');
+    }
 }
 
 function sendHealthData(
@@ -53,6 +60,24 @@ function responseTiming(request, reply, next) {
 function errorsCounter(request, reply, error, done) {
     this.stats.counter(`api.${request.metrics.id}.errors.${reply.statusCode}`);
     done();
+}
+
+function timeAsyncFunction(name, fn, context = null, ...args) {
+    validateString(name);
+    const start = hrtime.bigint();
+    const done = () => {
+        const end = hrtime.bigint();
+        const value = end - start;
+        sendTiming(name, value);
+    };
+
+    const result = fn.call(context, args);
+    if (result && typeof result.then === 'function') {
+        return result.then(done, done);
+    } else {
+        done();
+        return result;
+    }
 }
 
 /**
@@ -166,6 +191,65 @@ module.exports = fp(
             fastify.addHook('onError', errorsCounter);
         }
 
+        function sendTiming(name, value) {
+            stats.timing(name, value);
+        }
+
+        function createAsyncTimedFunction(name, fn, context = null) {
+            return function asyncTimedFunction(...args) {};
+        }
+
+        function createCbTimedFunction() {
+            return function cbTimedFunction(...args) {};
+        }
+
+        function createSyncTimedFunction() {
+            return function syncTimedFunction(...args) {};
+        }
+
+        function timeAsyncFunction(name, fn, context = null, ...args) {
+            validateString(name);
+            const done = () => {
+                const end = hrtime.bigint();
+                const value = end - start;
+                sendTiming(name, value);
+            };
+            const result = fn.call(context, args);
+            if (result && typeof result.then === 'function') {
+                result.then(done, done);
+            } else {
+                return Promise.reject(
+                    new Error('The timed function must return a Promise.')
+                );
+            }
+            return result;
+        }
+
+        function timeCbFunction(name, fn, context = null, ...args) {
+            validateString(name);
+            const cb = args[args.length - 1];
+            if (typeof cb !== 'function') {
+                throw new Error('cb must me a function');
+            }
+            const start = hrtime.bigint();
+            args[args.length - 1] = (err, ...v) => {
+                const end = hrtime.bigint();
+                const value = end - start;
+                sendTiming(name, value);
+                cb(err, ...v);
+            };
+            return fn.call(context, args);
+        }
+
+        function timeFunction(name, fn, context = null, ...args) {
+            validateString(name);
+            const start = hrtime.bigint();
+            const result = fn.call(context, args);
+            const end = hrtime.bigint();
+            const value = end - start;
+            sendTiming(name, value);
+            return result;
+        }
         next();
     },
     {
