@@ -23,6 +23,7 @@ async function setup(options) {
 async function configMacro(t, options) {
     const server = await setup(options);
     t.true(server.hasDecorator('stats'));
+    t.true(server.hasDecorator('doc'));
     t.true(server.hasDecorator('hrtime2ns'));
     t.true(server.hasDecorator('hrtime2ms'));
     t.true(server.hasDecorator('hrtime2s'));

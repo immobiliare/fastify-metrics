@@ -7,7 +7,9 @@ const { hrtime2ns, hrtime2ms, hrtime2s } = require('@dnlup/hrtime-utils');
 
 function clientMock() {
     const mock = {
-        socket: { onError: () => {} },
+        socket: {
+            onError: /* istanbul ignore next */ () => {},
+        },
     };
     for (const method of ['on', 'counter', 'timing', 'gauge', 'set']) {
         mock[method] = () => {};
