@@ -18,6 +18,7 @@ module.exports = {
             rules: {
                 // Prevent TypeScript-specific constructs from being erroneously flagged as unused
                 '@typescript-eslint/no-unused-vars': 'error',
+                strict: 'off',
             },
         },
     ],
