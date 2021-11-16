@@ -1,7 +1,7 @@
 import { FastifyPluginCallback, FastifyPluginAsync } from 'fastify';
 
-import Client from '@immobiliarelabs/dats';
-import { Options } from '@immobiliarelabs/dats';
+import Client, { Options } from '@immobiliarelabs/dats';
+import { Sampler } from '@dnlup/doc';
 
 export interface MetricsPluginOptions extends Options {
     sampleInterval?: number;
@@ -21,6 +21,7 @@ export default trapsPluginCallback;
 declare module 'fastify' {
     interface FastifyInstance {
         stats: Client;
+        doc?: Sampler;
         hrtime2ns: (time: [number, number]) => number;
         hrtime2ms: (time: [number, number]) => number;
         hrtime2s: (time: [number, number]) => number;

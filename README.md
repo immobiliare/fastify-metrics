@@ -110,9 +110,10 @@ These are the metrics that are collected automatically.
 The plugin adds the following decorators:
 
 -   `fastify.stats`: A [dats](https://github.com/immobiliare/dats) instance
--   `fastify.hrtime2ns`: A utility function to convert `process.hrtime([time])` to nanoseconds
--   `fastify.hrtime2ms`: A utility function to convert `process.hrtime([time])` to milliseconds
--   `fastify.hrtime2s`: A utility function to convert `process.hrtime([time])` to seconds
+-   `fastify.doc`: A [doc](https://github.com/dnlup/doc) instance used to sample process metrics, if `options.collect.health` is `true
+-   `fastify.hrtime2ns`: A utility function to convert the legacy `process.hrtime([time])` value to nanoseconds
+-   `fastify.hrtime2ms`: A utility function to convert the legacy `process.hrtime([time])` value to milliseconds
+-   `fastify.hrtime2s`: A utility function to convert the legacy `process.hrtime([time])` value to seconds
 
 ## Hooks
 

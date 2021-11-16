@@ -118,6 +118,7 @@ module.exports = fp(
 
         if (enabledMetrics.health) {
             const sampler = doc({ sampleInterval });
+            fastify.decorate('doc', sampler);
             const onSample = function () {
                 sendHealthData(
                     {
