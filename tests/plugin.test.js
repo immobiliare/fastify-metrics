@@ -464,3 +464,41 @@ test.serial(
         }
     }
 );
+
+test.serial('timerify bad args', async (t) => {
+    const list = [
+        {
+            args: [],
+            message:
+                'You have to pass a string value to name the timerified function metric',
+        },
+        {
+            args: ['name'],
+            message: 'You have to pass a function to timerify',
+        },
+        {
+            args: ['name', () => {}, ''],
+            message: 'You have to pass a function to the custom onSend hook',
+        },
+    ];
+    for (const opts of list) {
+        const server = await setup({
+            host: `udp://127.0.0.1:${t.context.address.port}`,
+            namespace: 'ns',
+            collect: {
+                timing: false,
+                hits: false,
+                errors: false,
+                health: false,
+            },
+        });
+        const error = t.throws(() => server.timerify(...opts.args), {
+            instanceOf: Error,
+        });
+        t.is(opts.message, error.message);
+    }
+});
+
+test.serial.todo('timerify impl on Node >= 16');
+
+test.serial.todo('timerify impl on Node < 16');
