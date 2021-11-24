@@ -8,6 +8,8 @@ const doc = require('@dnlup/doc');
 const { hrtime2ns, hrtime2ms, hrtime2s } = require('@dnlup/hrtime-utils');
 
 const is16 = version.split('.')[0] === 'v16';
+const gte16 = Number(version.split('.')[0].replace('v', '')) >= 16;
+console.log(gte16, Number(version.split('.')[0].replace('v', '')));
 
 function clientMock() {
     const mock = {

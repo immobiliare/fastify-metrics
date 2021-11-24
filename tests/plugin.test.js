@@ -2,10 +2,14 @@
 
 const test = require('ava');
 const sinon = require('sinon');
-const { StatsdMock } = require('./helpers/statsd');
 const { hrtime2ms } = require('@dnlup/hrtime-utils');
+const { StatsdMock } = require('./helpers/statsd');
 
 const PLUGINS_METHODS = ['counter', 'timing', 'gauge', 'set'];
+const sleep = (time) => new Promise((resolve) => setTimeout(resolve, time));
+const gte16 = Number(process.version.split('.')[0].replace('v', '')) >= 16;
+
+// TODO: use fake timers
 
 async function setup(options) {
     const server = require('fastify')();
@@ -52,6 +56,8 @@ test.serial('configuration with statsd host', configMacro, {
 test.serial('configuration with custom sampleInterval', configMacro, {
     sampleInterval: 2000,
 });
+
+test.serial.todo('should not decorate doc if health is not enabled');
 
 test.serial('sending process health metrics', async (t) => {
     const start = process.hrtime();
@@ -513,7 +519,34 @@ test.serial('timerify', async (t) => {
     t.true(server.hasDecorator('timerify'));
 });
 
-test.serial.todo('timerify custom send implementation');
+test.serial('timerify custom send implementation', async (t) => {
+    const onSend = sinon.spy();
+    const func = async () => {
+        await sleep(100);
+    };
+
+    const server = await setup({
+        host: `udp://127.0.0.1:${t.context.address.port}`,
+        namespace: 'ns',
+        collect: {
+            timing: false,
+            hits: false,
+            errors: false,
+            health: false,
+        },
+    });
+    const timerified = server.timerify('func', func, onSend);
+    await timerified();
+    // The call to the perf observer callbakc is not immediate, let's wait a bit.
+    await sleep(100);
+    t.true(onSend.calledOnce);
+    t.is('func', onSend.firstCall.firstArg);
+    t.true(
+        typeof onSend.firstCall.lastArg === 'number' ||
+            typeof onSend.firstCall.lastArg === 'object'
+    );
+});
+
 test.serial.todo('timerify impl on Node >= 16');
 
 test.serial.todo('timerify impl on Node < 16');
