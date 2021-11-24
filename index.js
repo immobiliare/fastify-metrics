@@ -58,15 +58,12 @@ function errorsCounter(request, reply, error, done) {
     done();
 }
 
-function defaultFuncTiming(name, value) {
-    this.stats.timing(name, value);
-}
-
 function nativeTimerifyWrap(name, fn, onSend, opts) {
     const wrapped = performance.timerify(fn, opts);
     return function timerified(...args) {
         const obs = new PerformanceObserver((list) => {
             const entry = list.getEntries()[0];
+            /* istanbul ignore else */
             if (fn.name === entry.name) {
                 onSend(name, entry);
                 obs.disconnect();
@@ -93,25 +90,6 @@ function timerifyWrap(name, fn, onSend) {
         done();
         return result;
     };
-}
-
-function timerify(name, fn, onSend = defaultFuncTiming, opts) {
-    if (typeof name !== 'string') {
-        throw new Error(
-            'You have to pass a string value to name the timerified function metric'
-        );
-    }
-    if (typeof fn !== 'function') {
-        throw new Error('You have to pass a function to timerify');
-    }
-    if (typeof onSend !== 'function') {
-        throw new Error(
-            'You have to pass a function to the custom onSend hook'
-        );
-    }
-    return gte16
-        ? nativeTimerifyWrap(name, fn, onSend, opts)
-        : timerifyWrap(name, fn, onSend);
 }
 
 /**
@@ -173,7 +151,39 @@ module.exports = fp(
             : clientMock();
 
         fastify.decorate('stats', stats);
-        fastify.decorate('timerify', timerify);
+
+        function defaultOnSend() {
+            if (gte16) {
+                return function onSend(name, entry) {
+                    fastify.stats.timing(name, entry.duration);
+                };
+            }
+            return function onSend(name, value) {
+                fastify.stats.timing(name, value);
+            };
+        }
+        const _onSend = defaultOnSend();
+        fastify.decorate(
+            'timerify',
+            function (name, fn, onSend = _onSend, opts) {
+                if (typeof name !== 'string') {
+                    throw new Error(
+                        'You have to pass a string value to name the timerified function metric'
+                    );
+                }
+                if (typeof fn !== 'function') {
+                    throw new Error('You have to pass a function to timerify');
+                }
+                if (typeof onSend !== 'function') {
+                    throw new Error(
+                        'You have to pass a function to the custom onSend hook'
+                    );
+                }
+                return gte16
+                    ? nativeTimerifyWrap(name, fn, onSend, opts)
+                    : timerifyWrap(name, fn, onSend);
+            }
+        );
         fastify.decorate('hrtime2ns', hrtime2ns);
         fastify.decorate('hrtime2ms', hrtime2ms);
         fastify.decorate('hrtime2s', hrtime2s);

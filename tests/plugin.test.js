@@ -506,6 +506,9 @@ test.serial('timerify bad args', async (t) => {
 });
 
 test.serial('timerify', async (t) => {
+    const func = async () => {
+        await sleep(100);
+    };
     const server = await setup({
         host: `udp://127.0.0.1:${t.context.address.port}`,
         namespace: 'ns',
@@ -517,6 +520,17 @@ test.serial('timerify', async (t) => {
         },
     });
     t.true(server.hasDecorator('timerify'));
+    const timerified = server.timerify('func', func);
+    await Promise.all([
+        new Promise((resolve) => {
+            t.context.statsd.on('metric', (buffer) => {
+                t.true(/ns\.func:\d+(\.\d+)?\|ms/.test(buffer.toString()));
+                resolve();
+            });
+        }),
+        timerified(),
+    ]);
+    t.pass();
 });
 
 test.serial('timerify custom send implementation', async (t) => {
@@ -547,7 +561,7 @@ test.serial('timerify custom send implementation', async (t) => {
     );
 });
 
-test.serial('timerify impl on Node >= 16', async (t) => {
+test.serial('timerify custom onSend on Node >= 16', async (t) => {
     if (!gte16) {
         return t.pass();
     }
@@ -569,11 +583,11 @@ test.serial('timerify impl on Node >= 16', async (t) => {
     });
     const timerified = server.timerify('func', func, onSend);
     await timerified();
-    // The call to the perf observer callbakc is not immediate, let's wait a bit.
+    // The call to the perf observer callback is not immediate, let's wait a bit.
     await sleep(100);
     t.true(onSend.calledOnce);
     t.is('func', onSend.firstCall.firstArg);
     t.true(onSend.firstCall.lastArg instanceof PerformanceEntry);
 });
 
-test.serial.todo('timerify impl on Node < 16');
+test.serial.todo('timerify custom onSend on Node < 16');
