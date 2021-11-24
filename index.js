@@ -1,15 +1,12 @@
 'use strict';
 
-const { version } = require('process');
 const { performance, PerformanceObserver } = require('perf_hooks');
 const fp = require('fastify-plugin');
 const { default: Client } = require('@immobiliarelabs/dats');
 const doc = require('@dnlup/doc');
 const { hrtime2ns, hrtime2ms, hrtime2s } = require('@dnlup/hrtime-utils');
 
-const is16 = version.split('.')[0] === 'v16';
-const gte16 = Number(version.split('.')[0].replace('v', '')) >= 16;
-console.log(gte16, Number(version.split('.')[0].replace('v', '')));
+const gte16 = Number(process.version.split('.')[0].replace('v', '')) >= 16;
 
 function clientMock() {
     const mock = {
@@ -112,7 +109,7 @@ function timerify(name, fn, onSend = defaultFuncTiming, opts) {
             'You have to pass a function to the custom onSend hook'
         );
     }
-    return is16
+    return gte16
         ? nativeTimerifyWrap(name, fn, onSend, opts)
         : timerifyWrap(name, fn, onSend);
 }

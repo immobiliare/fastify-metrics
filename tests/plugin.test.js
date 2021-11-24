@@ -547,6 +547,33 @@ test.serial('timerify custom send implementation', async (t) => {
     );
 });
 
-test.serial.todo('timerify impl on Node >= 16');
+test.serial('timerify impl on Node >= 16', async (t) => {
+    if (!gte16) {
+        return t.pass();
+    }
+    const { PerformanceEntry } = require('perf_hooks');
+    const onSend = sinon.spy();
+    const func = async () => {
+        await sleep(100);
+    };
+
+    const server = await setup({
+        host: `udp://127.0.0.1:${t.context.address.port}`,
+        namespace: 'ns',
+        collect: {
+            timing: false,
+            hits: false,
+            errors: false,
+            health: false,
+        },
+    });
+    const timerified = server.timerify('func', func, onSend);
+    await timerified();
+    // The call to the perf observer callbakc is not immediate, let's wait a bit.
+    await sleep(100);
+    t.true(onSend.calledOnce);
+    t.is('func', onSend.firstCall.firstArg);
+    t.true(onSend.firstCall.lastArg instanceof PerformanceEntry);
+});
 
 test.serial.todo('timerify impl on Node < 16');
