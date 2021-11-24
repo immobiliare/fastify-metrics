@@ -499,6 +499,21 @@ test.serial('timerify bad args', async (t) => {
     }
 });
 
+test.serial('timerify', async (t) => {
+    const server = await setup({
+        host: `udp://127.0.0.1:${t.context.address.port}`,
+        namespace: 'ns',
+        collect: {
+            timing: false,
+            hits: false,
+            errors: false,
+            health: false,
+        },
+    });
+    t.true(server.hasDecorator('timerify'));
+});
+
+test.serial.todo('timerify custom send implementation');
 test.serial.todo('timerify impl on Node >= 16');
 
 test.serial.todo('timerify impl on Node < 16');
