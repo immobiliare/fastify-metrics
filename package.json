@@ -80,9 +80,5 @@
         "@dnlup/hrtime-utils": "^1.0.1",
         "@immobiliarelabs/dats": "^1.0.0",
         "fastify-plugin": "^3.0.0"
-    },
-    "volta": {
-        "node": "16.12.0",
-        "npm": "8.1.1"
     }
 }
