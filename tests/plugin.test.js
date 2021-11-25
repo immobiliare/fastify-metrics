@@ -4,10 +4,10 @@ const test = require('ava');
 const sinon = require('sinon');
 const { hrtime2ms } = require('@dnlup/hrtime-utils');
 const { StatsdMock } = require('./helpers/statsd');
+const { gte16 } = require('../lib/utils');
 
 const PLUGINS_METHODS = ['counter', 'timing', 'gauge', 'set'];
 const sleep = (time) => new Promise((resolve) => setTimeout(resolve, time));
-const gte16 = Number(process.version.split('.')[0].replace('v', '')) >= 16;
 
 // TODO: use fake timers
 

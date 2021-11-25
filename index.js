@@ -1,12 +1,12 @@
 'use strict';
 
-const { performance, PerformanceObserver } = require('perf_hooks');
 const fp = require('fastify-plugin');
 const { default: Client } = require('@immobiliarelabs/dats');
 const doc = require('@dnlup/doc');
 const { hrtime2ns, hrtime2ms, hrtime2s } = require('@dnlup/hrtime-utils');
-
-const gte16 = Number(process.version.split('.')[0].replace('v', '')) >= 16;
+const { gte16 } = require('./lib/utils');
+const nativeTimerifyWrap = require('./lib/nativeTimerifyWrap');
+const timerifyWrap = require('./lib/timerifyWrap');
 
 function clientMock() {
     const mock = {
@@ -56,40 +56,6 @@ function responseTiming(request, reply, next) {
 function errorsCounter(request, reply, error, done) {
     this.stats.counter(`api.${request.metrics.id}.errors.${reply.statusCode}`);
     done();
-}
-
-function nativeTimerifyWrap(name, fn, onSend, opts) {
-    const wrapped = performance.timerify(fn, opts);
-    return function timerified(...args) {
-        const obs = new PerformanceObserver((list) => {
-            const entry = list.getEntries()[0];
-            /* istanbul ignore else */
-            if (fn.name === entry.name) {
-                onSend(name, entry);
-                obs.disconnect();
-            }
-        });
-        obs.observe({ entryTypes: ['function'] });
-        return Reflect.apply(wrapped, this, args);
-    };
-}
-
-function timerifyWrap(name, fn, onSend) {
-    return function timerified(...args) {
-        let start;
-        const done = () => {
-            const end = performance.now();
-            const value = end - start;
-            onSend(name, value);
-        };
-        start = performance.now();
-        const result = Reflect.apply(fn, this, args);
-        if (result && typeof result.finally === 'function') {
-            return result.finally(done);
-        }
-        done();
-        return result;
-    };
 }
 
 function sendPerfEntry(name, entry) {
@@ -161,7 +127,6 @@ module.exports = fp(
             : clientMock();
 
         fastify.decorate('stats', stats);
-
 
         const _onSend = defaultOnSend.bind(fastify);
         fastify.decorate(

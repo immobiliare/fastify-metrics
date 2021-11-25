@@ -22,7 +22,7 @@
     "files": [
         "index.js",
         "index.d.ts",
-        "util.js"
+        "lib"
     ],
     "scripts": {
         "lint": "eslint --fix --ignore-path .gitignore .",
