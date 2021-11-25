@@ -2,6 +2,7 @@
 
 const test = require('ava');
 const sinon = require('sinon');
+const { performance } = require('perf_hooks');
 const { hrtime2ms } = require('@dnlup/hrtime-utils');
 const { StatsdMock } = require('./helpers/statsd');
 const { gte16 } = require('../lib/utils');
@@ -598,10 +599,13 @@ test.serial('timerify custom onSend on Node < 16', async (t) => {
         t.log('skipping test');
         return t.pass();
     }
+    const clock = sinon.useFakeTimers();
+    t.teardown(() => clock.restore());
     const onSend = sinon.spy();
     const asyncFunc = async () => {
         await sleep(100);
     };
+    const syncFunc = () => {};
 
     const server = await setup({
         host: `udp://127.0.0.1:${t.context.address.port}`,
@@ -613,9 +617,25 @@ test.serial('timerify custom onSend on Node < 16', async (t) => {
             health: false,
         },
     });
-    const timerified = server.timerify('asyncFunc', asyncFunc, onSend);
-    await timerified();
+    const asyncTimerified = server.timerify('asyncFunc', asyncFunc, onSend);
+    const syncTimerified = server.timerify('syncFunc', syncFunc, onSend);
+
+    let start = performance.now();
+    const ret = asyncTimerified();
+    clock.tick(100);
+    await ret;
+    let end = performance.now();
+
+    t.is(100, end - start);
     t.true(onSend.calledOnce);
     t.is('asyncFunc', onSend.firstCall.firstArg);
     t.is('number', typeof onSend.firstCall.lastArg);
+
+    start = performance.now();
+    syncTimerified();
+    end = performance.now();
+    t.is(0, end - start);
+    t.true(onSend.calledTwice);
+    t.is('syncFunc', onSend.lastCall.firstArg);
+    t.is('number', typeof onSend.lastCall.lastArg);
 });
