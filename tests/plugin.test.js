@@ -562,7 +562,9 @@ test.serial('timerify custom send implementation', async (t) => {
 });
 
 test.serial('timerify custom onSend on Node >= 16', async (t) => {
+    // No way to conditionally skip a test
     if (!gte16) {
+        t.log('skipping test');
         return t.pass();
     }
     const { PerformanceEntry } = require('perf_hooks');
@@ -590,4 +592,30 @@ test.serial('timerify custom onSend on Node >= 16', async (t) => {
     t.true(onSend.firstCall.lastArg instanceof PerformanceEntry);
 });
 
-test.serial.todo('timerify custom onSend on Node < 16');
+test.serial('timerify custom onSend on Node < 16', async (t) => {
+    // No way to conditionally skip a test
+    if (gte16) {
+        t.log('skipping test');
+        return t.pass();
+    }
+    const onSend = sinon.spy();
+    const func = async () => {
+        await sleep(100);
+    };
+
+    const server = await setup({
+        host: `udp://127.0.0.1:${t.context.address.port}`,
+        namespace: 'ns',
+        collect: {
+            timing: false,
+            hits: false,
+            errors: false,
+            health: false,
+        },
+    });
+    const timerified = server.timerify('func', func, onSend);
+    await timerified();
+    t.true(onSend.calledOnce);
+    t.is('func', onSend.firstCall.firstArg);
+    t.is('number', typeof onSend.firstCall.lastArg);
+});
