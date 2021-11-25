@@ -599,7 +599,7 @@ test.serial('timerify custom onSend on Node < 16', async (t) => {
         return t.pass();
     }
     const onSend = sinon.spy();
-    const func = async () => {
+    const asyncFunc = async () => {
         await sleep(100);
     };
 
@@ -613,9 +613,9 @@ test.serial('timerify custom onSend on Node < 16', async (t) => {
             health: false,
         },
     });
-    const timerified = server.timerify('func', func, onSend);
+    const timerified = server.timerify('asyncFunc', asyncFunc, onSend);
     await timerified();
     t.true(onSend.calledOnce);
-    t.is('func', onSend.firstCall.firstArg);
+    t.is('asyncFunc', onSend.firstCall.firstArg);
     t.is('number', typeof onSend.firstCall.lastArg);
 });
