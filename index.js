@@ -92,6 +92,16 @@ function timerifyWrap(name, fn, onSend) {
     };
 }
 
+function sendPerfEntry(name, entry) {
+    this.stats.timing(name, entry.duration);
+}
+
+function sendTiming(name, value) {
+    this.stats.timing(name, value);
+}
+
+const defaultOnSend = gte16 ? sendPerfEntry : sendTiming;
+
 /**
  * Default metrics that are enabled
  */
@@ -152,17 +162,8 @@ module.exports = fp(
 
         fastify.decorate('stats', stats);
 
-        function defaultOnSend() {
-            if (gte16) {
-                return function onSend(name, entry) {
-                    fastify.stats.timing(name, entry.duration);
-                };
-            }
-            return function onSend(name, value) {
-                fastify.stats.timing(name, value);
-            };
-        }
-        const _onSend = defaultOnSend();
+
+        const _onSend = defaultOnSend.bind(fastify);
         fastify.decorate(
             'timerify',
             function (name, fn, onSend = _onSend, opts) {
