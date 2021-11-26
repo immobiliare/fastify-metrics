@@ -139,6 +139,9 @@ module.exports = fp(
                         'You have to pass a function to the custom onSend hook'
                     );
                 }
+                if (onSend !== _onSend) {
+                    onSend = onSend.bind(fastify);
+                }
                 return gte16
                     ? nativeTimerifyWrap(name, fn, onSend, opts)
                     : timerifyWrap(name, fn, onSend);

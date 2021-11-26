@@ -499,9 +499,13 @@ test.serial('timerify bad args', async (t) => {
                 health: false,
             },
         });
-        const error = t.throws(() => server.timerify(...opts.args), {
-            instanceOf: Error,
-        });
+        const error = t.throws(
+            () => server.timerify(...opts.args),
+            {
+                instanceOf: Error,
+            },
+            'Expected error: ' + opts.message
+        );
         t.is(opts.message, error.message);
     }
 });
@@ -555,6 +559,7 @@ test.serial('timerify custom send implementation', async (t) => {
     // The call to the perf observer callbakc is not immediate, let's wait a bit.
     await sleep(100);
     t.true(onSend.calledOnce);
+    t.is(server, onSend.firstCall.thisValue);
     t.is('func', onSend.firstCall.firstArg);
     t.true(
         typeof onSend.firstCall.lastArg === 'number' ||
@@ -628,6 +633,7 @@ test.serial('timerify custom onSend on Node < 16', async (t) => {
 
     t.is(100, end - start);
     t.true(onSend.calledOnce);
+    t.is(server, onSend.firstCall.thisValue);
     t.is('asyncFunc', onSend.firstCall.firstArg);
     t.is('number', typeof onSend.firstCall.lastArg);
 
