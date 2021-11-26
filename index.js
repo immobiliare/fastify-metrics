@@ -7,6 +7,8 @@ const { hrtime2ns, hrtime2ms, hrtime2s } = require('@dnlup/hrtime-utils');
 const { gte16 } = require('./lib/utils');
 const nativeTimerifyWrap = require('./lib/nativeTimerifyWrap');
 const timerifyWrap = require('./lib/timerifyWrap');
+const sendTiming = require('./lib/sendTiming');
+const sendPerfEntry = require('./lib/sendPerfEntry');
 
 function clientMock() {
     const mock = {
@@ -56,14 +58,6 @@ function responseTiming(request, reply, next) {
 function errorsCounter(request, reply, error, done) {
     this.stats.counter(`api.${request.metrics.id}.errors.${reply.statusCode}`);
     done();
-}
-
-function sendPerfEntry(name, entry) {
-    this.stats.timing(name, entry.duration);
-}
-
-function sendTiming(name, value) {
-    this.stats.timing(name, value);
 }
 
 const defaultOnSend = gte16 ? sendPerfEntry : sendTiming;
