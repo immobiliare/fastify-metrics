@@ -574,10 +574,15 @@ test.serial('timerify custom onSend on Node >= 16', async (t) => {
         return t.pass();
     }
     const { PerformanceEntry } = require('perf_hooks');
+
     const onSend = sinon.spy();
-    const func = async () => {
+    const asyncFunc1 = async () => {
         await sleep(100);
     };
+    const asyncFunc2 = async () => {
+        await sleep(200);
+    };
+    const syncFunc = () => {};
 
     const server = await setup({
         host: `udp://127.0.0.1:${t.context.address.port}`,
@@ -589,13 +594,23 @@ test.serial('timerify custom onSend on Node >= 16', async (t) => {
             health: false,
         },
     });
-    const timerified = server.timerify('func', func, onSend);
-    await timerified();
-    // The call to the perf observer callback is not immediate, let's wait a bit.
+    const asyncTimerified1 = server.timerify('asyncFunc1', asyncFunc1, onSend);
+    const asyncTimerified2 = server.timerify('asyncFunc2', asyncFunc2, onSend);
+    const syncTimerified = server.timerify('syncFunc', syncFunc, onSend);
+
+    const asyncJobs = Promise.all([asyncTimerified2(), asyncTimerified1()]);
+    syncTimerified();
+    await asyncJobs;
+    // Wait for all the callbacks of the perf observer to be fired.
     await sleep(100);
-    t.true(onSend.calledOnce);
-    t.is('func', onSend.firstCall.firstArg);
+
+    t.true(onSend.calledThrice);
+    t.is('syncFunc', onSend.firstCall.firstArg);
     t.true(onSend.firstCall.lastArg instanceof PerformanceEntry);
+    t.is('asyncFunc1', onSend.secondCall.firstArg);
+    t.true(onSend.secondCall.lastArg instanceof PerformanceEntry);
+    t.is('asyncFunc2', onSend.thirdCall.firstArg);
+    t.true(onSend.thirdCall.lastArg instanceof PerformanceEntry);
 });
 
 test.serial('timerify custom onSend on Node < 16', async (t) => {
