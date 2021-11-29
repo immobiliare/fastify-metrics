@@ -10,7 +10,8 @@ const { gte16 } = require('../lib/utils');
 const PLUGINS_METHODS = ['counter', 'timing', 'gauge', 'set'];
 const sleep = (time) => new Promise((resolve) => setTimeout(resolve, time));
 
-// TODO: use fake timers
+// TODO: use fake timers where possible, they don't play well with
+// performance observers.
 
 async function setup(options) {
     const server = require('fastify')();
