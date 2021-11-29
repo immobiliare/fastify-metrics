@@ -598,14 +598,17 @@ test.serial('timerify custom onSend on Node >= 16', async (t) => {
     const asyncTimerified1 = server.timerify('asyncFunc1', asyncFunc1, onSend);
     const asyncTimerified2 = server.timerify('asyncFunc2', asyncFunc2, onSend);
     const syncTimerified = server.timerify('syncFunc', syncFunc, onSend);
-
+    const anon = server.timerify('anon', () => {});
     const asyncJobs = Promise.all([asyncTimerified2(), asyncTimerified1()]);
+
     syncTimerified();
+    anon();
     await asyncJobs;
+
     // Wait for all the callbacks of the perf observer to be fired.
     await sleep(100);
 
-    t.true(onSend.calledThrice);
+    t.is(4, onSend.callCount);
     t.is('syncFunc', onSend.firstCall.firstArg);
     t.true(onSend.firstCall.lastArg instanceof PerformanceEntry);
     t.is('asyncFunc1', onSend.secondCall.firstArg);
