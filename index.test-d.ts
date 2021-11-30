@@ -1,9 +1,17 @@
 import { expectType } from 'tsd';
 
-import Fastify from 'fastify';
+import Fastify, { FastifyPluginCallback, FastifyPluginAsync } from 'fastify';
 import Client from '@immobiliarelabs/dats';
 import { Sampler } from '@dnlup/doc';
-import plugin from './index';
+import plugin, {
+    MetricsPluginCallback,
+    MetricsPluginAsync,
+    MetricsPluginOptions,
+} from './index';
+
+expectType<FastifyPluginCallback<MetricsPluginOptions>>(plugin);
+expectType<FastifyPluginCallback<MetricsPluginOptions>>(MetricsPluginCallback);
+expectType<FastifyPluginAsync<MetricsPluginOptions>>(MetricsPluginAsync);
 
 const fastify = Fastify();
 
