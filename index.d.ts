@@ -13,10 +13,10 @@ export interface MetricsPluginOptions extends Options {
     };
 }
 
-export const trapsPluginCallback: FastifyPluginCallback<MetricsPluginOptions>;
-export const trapsPluginAsync: FastifyPluginAsync<MetricsPluginOptions>;
+export const MetricsPluginCallback: FastifyPluginCallback<MetricsPluginOptions>;
+export const MetricsPluginAsync: FastifyPluginAsync<MetricsPluginOptions>;
 
-export default trapsPluginCallback;
+export default MetricsPluginCallback;
 
 declare module 'fastify' {
     interface FastifyInstance {
