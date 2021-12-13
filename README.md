@@ -27,6 +27,15 @@ It supports Fastify versions `>=3.0.0`.
     -   [Notes](#notes)
 -   [Metrics collected](#metrics-collected)
 -   [Decorators](#decorators)
+    -   [`fastify.stats`](#fastifystats)
+    -   [`fastify.doc`:](#fastifydoc)
+    -   [`fastify.hrtime2ns(time)`](#fastifyhrtime2nstime)
+    -   [`fastify.hrtime2us(time)`](#fastifyhrtime2ustime)
+    -   [`fastify.hrtime2ms(time)`](#fastifyhrtime2mstime)
+    -   [`fastify.hrtime2s(time)`](#fastifyhrtime2stime)
+    -   [`fastify.timerify(fn[, options])`](#fastifytimerifyfn-options)
+        -   [Caveats](#caveats)
+        -   [onSend(name, value)](#onsendname-value)
 -   [Hooks](#hooks)
 -   [API](#api)
     -   [Configuration `options`](#configuration-options)
@@ -107,13 +116,61 @@ These are the metrics that are collected automatically.
 
 ## Decorators
 
-The plugin adds the following decorators:
+The plugin adds the following decorators.
 
--   `fastify.stats`: A [dats](https://github.com/immobiliare/dats) instance
--   `fastify.doc`: A [doc](https://github.com/dnlup/doc) instance used to sample process metrics, if `options.collect.health` is `true
--   `fastify.hrtime2ns`: A utility function to convert the legacy `process.hrtime([time])` value to nanoseconds
--   `fastify.hrtime2ms`: A utility function to convert the legacy `process.hrtime([time])` value to milliseconds
--   `fastify.hrtime2s`: A utility function to convert the legacy `process.hrtime([time])` value to seconds
+### `fastify.stats`
+
+-   [`<Client>`](https://github.com/immobiliare/dats#client)
+
+A [dats](https://github.com/immobiliare/dats) instance.
+
+### `fastify.doc`:
+
+-   [`<Sampler>`](https://github.com/dnlup/doc#class-docsampler)
+
+A [doc](https://github.com/dnlup/doc) sampler instance used to sample process metrics, if `options.collect.health` is `true`.
+
+### `fastify.hrtime2ns(time)`
+
+A [utility function](https://github.com/dnlup/hrtime-utils#hrtime2nstime) to convert the legacy `process.hrtime([time])` value to nanoseconds.
+
+### `fastify.hrtime2us(time)`
+
+A [utility function](https://github.com/dnlup/hrtime-utils#hrtime2ustime) to convert the legacy `process.hrtime([time])` value to microseconds.
+
+### `fastify.hrtime2ms(time)`
+
+A [utility function](https://github.com/dnlup/hrtime-utils#hrtime2mstime) to convert the legacy `process.hrtime([time])` value to milliseconds.
+
+### `fastify.hrtime2s(time)`
+
+A [utility function](https://github.com/dnlup/hrtime-utils#hrtime2stime) to convert the legacy `process.hrtime([time])` value to seconds.
+
+### `fastify.timerify(fn[, options])`
+
+-   `fn` [`<Function>`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Function): the function to time. It can be a sync function, an async function, a function returning a promise, or a constructor. Functions with the callback pattern are not supported.
+-   `options` [`<Object>`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object): optional configuration options.
+    -   `label` [`<string>`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Data_structures#String_type): the label of the metric, by default is the function name.
+    -   `onSend` [`<Function>`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Function): a custom function to send the timing metric. By default it is a function that send the execution time in millisencods with the passed `name` as label. See the [`onSend`](#onsendname-value) definition.
+    -   `timerifyOptions` [`<Object>`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object): the same options object used to configure the Node core [`timerify`](https://nodejs.org/dist/latest-v16.x/docs/api/perf_hooks.html#performancetimerifyfn-options) function.
+
+It creates a new function that automatically tracks its execution time and sends the corresponding metric.
+
+TODO: add examples
+
+#### Caveats
+
+This decorator uses the core [`timerify`](https://nodejs.org/dist/latest-v16.x/docs/api/perf_hooks.html#performancetimerifyfn-options) api in conjunction with a [`PerformanceObserver`](https://nodejs.org/dist/latest-v16.x/docs/api/perf_hooks.html#class-perf_hooksperformanceobserver) to time the execution of a function.
+Since the `name` property of the original function is used to create a [`PerfomanceEntry`](https://nodejs.org/dist/latest-v16.x/docs/api/perf_hooks.html#class-performanceentry) in the timeline, passing anonymous functions or using the same name for multiple functions will result in conflicts when the `PerformanceObserver` callback of this decorator function tries to understand which execution time has been tracked. So, avoid using conflicting names when creating timerified functions whenever possible.
+
+#### onSend(name, value)
+
+-   `name` [`<string>`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Data_structures#String_type): the label of the metric.
+-   `value` [`<PerfomanceEntry>`](https://nodejs.org/dist/latest-v16.x/docs/api/perf_hooks.html#class-performanceentry): the performance entry of the function.
+
+A syncronous function to send the function execution time. The function context is bound to the `fastify` instance that registered the plugin.
+
+TODO: add examples
 
 ## Hooks
 
@@ -137,7 +194,7 @@ This module exports a [plugin registration function](https://github.com/fastify/
 -   `bufferSize`: Number. Metrics buffer size. See [dats](https://github.com/immobiliare/dats#new-clientoptions).
 -   `bufferFlushTimeout`: Number. Metrics buffer flush timeout. See [dats](https://github.com/immobiliare/dats#new-clientoptions).
 -   `sampleInterval`: Number. Optional. Sample interval in `ms` used to gather process stats. Defaults to `1000`.
--   `onError`: Function: `(err) => void`. Optional. This function to handle possible Dats errors. See [dats](https://github.com/immobiliare/dats#new-clientoptions). Default: `(err) => log(err)`
+-   `onError`: Function: `(err) => void`. Optional. This function to handle possible Dats errors. See [dats](https://github.com/immobiliare/dats#new-clientoptions). Default: `(err) => fastify.log.error(err)`
 -   `udpDnsCache`: Boolean. Optional. Activate udpDnsCache. Default `true`.
 -   `udpDnsCacheTTL`: Number. Optional. DNS cache Time to live of an entry in seconds. Default `120`.
 -   `collect`: Object. Optional. Which metrics the plugin should track.

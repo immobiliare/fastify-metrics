@@ -3,7 +3,20 @@
 const fp = require('fastify-plugin');
 const { default: Client } = require('@immobiliarelabs/dats');
 const doc = require('@dnlup/doc');
-const { hrtime2ns, hrtime2ms, hrtime2s } = require('@dnlup/hrtime-utils');
+const {
+    hrtime2ns,
+    hrtime2us,
+    hrtime2ms,
+    hrtime2s,
+} = require('@dnlup/hrtime-utils');
+const { gte16 } = require('./lib/utils');
+
+const timerifyNotSupported = () => {
+    throw new Error('Timerify is supported only on Node version 16 and newer.');
+};
+const timerifyWrap = gte16
+    ? require('./lib/timerifyWrap').timerifyWrap
+    : () => timerifyNotSupported;
 
 function clientMock() {
     const mock = {
@@ -109,12 +122,14 @@ module.exports = fp(
                   bufferFlushTimeout,
                   udpDnsCache,
                   udpDnsCacheTTL,
-                  onError: onError,
+                  onError,
               })
             : clientMock();
 
         fastify.decorate('stats', stats);
+        fastify.decorate('timerify', timerifyWrap(fastify));
         fastify.decorate('hrtime2ns', hrtime2ns);
+        fastify.decorate('hrtime2us', hrtime2us);
         fastify.decorate('hrtime2ms', hrtime2ms);
         fastify.decorate('hrtime2s', hrtime2s);
 
