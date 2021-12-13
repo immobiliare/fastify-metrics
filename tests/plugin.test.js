@@ -1,15 +1,19 @@
 'use strict';
 
 const test = require('ava');
+const fastify = require('fastify');
 const sinon = require('sinon');
-const { StatsdMock } = require('./helpers/statsd');
 const { hrtime2ms } = require('@dnlup/hrtime-utils');
+const { StatsdMock } = require('./helpers/statsd');
+const { gte16 } = require('../lib/utils');
+const plugin = require('../');
 
 const PLUGINS_METHODS = ['counter', 'timing', 'gauge', 'set'];
+const sleep = (time) => new Promise((resolve) => setTimeout(resolve, time));
 
 async function setup(options) {
-    const server = require('fastify')();
-    server.register(require('../'), options);
+    const server = fastify();
+    server.register(plugin, options);
     server.get('/', (request, reply) => {
         reply.send('ok');
     });
@@ -25,6 +29,7 @@ async function configMacro(t, options) {
     t.true(server.hasDecorator('stats'));
     t.true(server.hasDecorator('doc'));
     t.true(server.hasDecorator('hrtime2ns'));
+    t.true(server.hasDecorator('hrtime2us'));
     t.true(server.hasDecorator('hrtime2ms'));
     t.true(server.hasDecorator('hrtime2s'));
     for (const method of PLUGINS_METHODS) {
@@ -34,7 +39,6 @@ async function configMacro(t, options) {
 
 test.beforeEach(async (t) => {
     t.context.statsd = new StatsdMock();
-    /* eslint require-atomic-updates: 0 */
     t.context.address = await t.context.statsd.start();
 });
 
@@ -52,6 +56,8 @@ test.serial('configuration with statsd host', configMacro, {
 test.serial('configuration with custom sampleInterval', configMacro, {
     sampleInterval: 2000,
 });
+
+test.serial.todo('should not decorate doc if health is not enabled');
 
 test.serial('sending process health metrics', async (t) => {
     const start = process.hrtime();
@@ -464,3 +470,150 @@ test.serial(
         }
     }
 );
+
+test.serial('timerify bad args', async (t) => {
+    if (!gte16) {
+        t.log('skipping test');
+        return t.pass();
+    }
+    const list = [
+        {
+            args: [],
+            message: 'You have to pass a function to timerify',
+        },
+        {
+            args: [() => {}, { label: 3 }],
+            message:
+                'You have to pass a string to label the timerified function metric',
+        },
+        {
+            args: [() => {}, { onSend: '' }],
+            message: 'You have to pass a function to the custom onSend hook',
+        },
+    ];
+    for (const opts of list) {
+        const server = await setup({
+            host: `udp://127.0.0.1:${t.context.address.port}`,
+            namespace: 'ns',
+            collect: {
+                timing: false,
+                hits: false,
+                errors: false,
+                health: false,
+            },
+        });
+        const error = t.throws(() => server.timerify(...opts.args), {
+            instanceOf: Error,
+        });
+        t.is(opts.message, error.message, error.stack);
+    }
+});
+
+test.serial('timerify', async (t) => {
+    if (!gte16) {
+        t.log('skipping test');
+        return t.pass();
+    }
+    const { clear } = require('../lib/timerifyWrap');
+    t.teardown(clear);
+    const func = async () => {
+        await sleep(100);
+    };
+    const server = await setup({
+        host: `udp://127.0.0.1:${t.context.address.port}`,
+        namespace: 'ns',
+        collect: {
+            timing: false,
+            hits: false,
+            errors: false,
+            health: false,
+        },
+    });
+
+    t.true(server.hasDecorator('timerify'));
+    const timerified = server.timerify(func, {
+        label: 'func',
+    });
+    await Promise.all([
+        new Promise((resolve) => {
+            t.context.statsd.on('metric', (buffer) => {
+                t.true(/ns\.func:\d+(\.\d+)?\|ms/.test(buffer.toString()));
+                resolve();
+            });
+        }),
+        timerified(),
+    ]);
+    const sameFunc = () => {};
+    const func1 = server.timerify(sameFunc);
+    const func2 = server.timerify(sameFunc);
+    t.is(func1, func2);
+});
+
+test.serial('timerify custom onSend', async (t) => {
+    if (!gte16) {
+        t.log('skipping test');
+        return t.pass();
+    }
+    const { clear } = require('../lib/timerifyWrap');
+    t.teardown(clear);
+    const { PerformanceEntry } = require('perf_hooks');
+
+    const onSend = sinon.spy();
+    const asyncFunc1 = async () => {
+        await sleep(100);
+    };
+    const asyncFunc2 = async () => {
+        await sleep(200);
+    };
+    const syncFunc = () => {};
+
+    const server = await setup({
+        host: `udp://127.0.0.1:${t.context.address.port}`,
+        namespace: 'ns',
+        collect: {
+            timing: false,
+            hits: false,
+            errors: false,
+            health: false,
+        },
+    });
+    const asyncTimerified1 = server.timerify(asyncFunc1, {
+        label: 'asyncFunc1',
+        onSend,
+    });
+    const asyncTimerified2 = server.timerify(asyncFunc2, {
+        label: 'asyncFunc2',
+        onSend,
+    });
+    const syncTimerified = server.timerify(syncFunc, {
+        label: 'syncFunc',
+        onSend,
+    });
+    const arrowFuncTimerified = server.timerify(() => {}, {
+        label: 'arrow',
+        onSend,
+    });
+    const anonFuncTimerified = server.timerify(function () {}, {
+        label: 'anon',
+    });
+    const asyncJobs = Promise.all([asyncTimerified2(), asyncTimerified1()]);
+
+    syncTimerified();
+    // All the anonymous functions will conflict with each other.
+    arrowFuncTimerified();
+    anonFuncTimerified();
+    await asyncJobs;
+
+    // Wait for all the callbacks of the perf observer to be fired.
+    await sleep(100);
+
+    t.is(3, onSend.callCount);
+    t.is('syncFunc', onSend.firstCall.firstArg);
+    t.true(onSend.firstCall.lastArg instanceof PerformanceEntry);
+    t.is('asyncFunc1', onSend.secondCall.firstArg);
+    t.true(onSend.secondCall.lastArg instanceof PerformanceEntry);
+    t.is('asyncFunc2', onSend.lastCall.firstArg);
+    t.true(onSend.lastCall.lastArg instanceof PerformanceEntry);
+});
+
+test.todo('timerify cleanup');

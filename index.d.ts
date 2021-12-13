@@ -1,7 +1,23 @@
-import { FastifyPluginCallback, FastifyPluginAsync } from 'fastify';
-
+import {
+    FastifyInstance,
+    FastifyPluginCallback,
+    FastifyPluginAsync,
+} from 'fastify';
+import { TimerifyOptions, PerformanceEntry } from 'perf_hooks';
 import Client, { Options } from '@immobiliarelabs/dats';
 import { Sampler } from '@dnlup/doc';
+
+export type OnSendHook = (
+    this: FastifyInstance,
+    name: string,
+    value: PerformanceEntry
+) => void;
+
+export type MetricsTimerifyOptions = {
+    label?: string;
+    onSend?: OnSendHook;
+    timerifyOptions?: TimerifyOptions;
+};
 
 export interface MetricsPluginOptions extends Options {
     sampleInterval?: number;
@@ -23,7 +39,12 @@ declare module 'fastify' {
         stats: Client;
         doc?: Sampler;
         hrtime2ns: (time: [number, number]) => number;
+        hrtime2us: (time: [number, number]) => number;
         hrtime2ms: (time: [number, number]) => number;
         hrtime2s: (time: [number, number]) => number;
+        timerify<T extends (...params: any[]) => any>(
+            fn: T,
+            options?: MetricsTimerifyOptions
+        ): T;
     }
 }

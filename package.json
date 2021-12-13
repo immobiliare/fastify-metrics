@@ -22,11 +22,11 @@
     "files": [
         "index.js",
         "index.d.ts",
-        "util.js"
+        "lib"
     ],
     "scripts": {
         "lint": "eslint --fix --ignore-path .gitignore .",
-        "test": "tsd && nyc --reporter=lcov --reporter=text-summary ava && nyc check-coverage --lines 100 --branches 100 --functions 100",
+        "test": "tsd && nyc --reporter=lcov --reporter=text-summary ava",
         "bench:base": "concurrently -k -s first \"node benchmarks/fixtures/base.js\" \"node -e 'setTimeout(() => {}, 1000)' && npx autocannon -c 100 -d 30 http://localhost:3000\"",
         "bench": "concurrently -k -s first \"node benchmarks/fixtures/withMetrics.js\" \"node benchmarks/fixtures/statsd.js\" \"node -e 'setTimeout(() => {}, 1000)' && npx autocannon -c 100 -d 30 http://localhost:3001\"",
         "toc": "markdown-toc -i README.md",
@@ -80,9 +80,5 @@
         "@dnlup/hrtime-utils": "^1.0.1",
         "@immobiliarelabs/dats": "^1.0.0",
         "fastify-plugin": "^3.0.0"
-    },
-    "volta": {
-        "node": "16.12.0",
-        "npm": "8.1.1"
     }
 }
