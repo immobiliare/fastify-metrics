@@ -4,6 +4,14 @@ const fp = require('fastify-plugin');
 const { default: Client } = require('@immobiliarelabs/dats');
 const doc = require('@dnlup/doc');
 const { hrtime2ns, hrtime2ms, hrtime2s } = require('@dnlup/hrtime-utils');
+const STATSD_METHODS = [
+    'counter',
+    'timing',
+    'gauge',
+    'set',
+    'close',
+    'connect',
+];
 
 function clientMock() {
     const mock = {
@@ -11,7 +19,7 @@ function clientMock() {
             onError: /* istanbul ignore next */ () => {},
         },
     };
-    for (const method of ['on', 'counter', 'timing', 'gauge', 'set']) {
+    for (const method of STATSD_METHODS) {
         mock[method] = () => {};
     }
     mock.close = (done) => {
@@ -89,6 +97,7 @@ module.exports = fp(
             udpDnsCache,
             udpDnsCacheTTL,
             collect = {},
+            customDatsClient = null,
             onError = (error) => void fastify.log.error(error),
         },
         next
@@ -101,17 +110,32 @@ module.exports = fp(
             }
         }
 
-        const stats = host
-            ? new Client({
-                  host,
-                  namespace,
-                  bufferSize,
-                  bufferFlushTimeout,
-                  udpDnsCache,
-                  udpDnsCacheTTL,
-                  onError: onError,
-              })
-            : clientMock();
+        let stats;
+
+        if (customDatsClient) {
+            for (const method of STATSD_METHODS) {
+                const fn = customDatsClient[method];
+                if (!fn || typeof fn !== 'function')
+                    return next(
+                        new Error(
+                            `customDatsClient does not implement ${method} method.`
+                        )
+                    );
+            }
+            stats = customDatsClient;
+        } else {
+            stats = host
+                ? new Client({
+                      host,
+                      namespace,
+                      bufferSize,
+                      bufferFlushTimeout,
+                      udpDnsCache,
+                      udpDnsCacheTTL,
+                      onError: onError,
+                  })
+                : clientMock();
+        }
 
         fastify.decorate('stats', stats);
         fastify.decorate('hrtime2ns', hrtime2ns);
