@@ -86,7 +86,7 @@ const COLLECT = {
 };
 
 module.exports = fp(
-    function (
+    async function (
         fastify,
         {
             host,
@@ -99,14 +99,13 @@ module.exports = fp(
             collect = {},
             customDatsClient = null,
             onError = (error) => void fastify.log.error(error),
-        },
-        next
+        }
     ) {
         const enabledMetrics = Object.assign({}, COLLECT, collect);
 
         for (const key of ['timing', 'hits', 'errors', 'health']) {
             if (typeof enabledMetrics[key] !== 'boolean') {
-                return next(new Error(`"${key}" must be a Boolean.`));
+                throw new Error(`"${key}" must be a Boolean.`);
             }
         }
 
@@ -116,10 +115,8 @@ module.exports = fp(
             for (const method of STATSD_METHODS) {
                 const fn = customDatsClient[method];
                 if (!fn || typeof fn !== 'function')
-                    return next(
-                        new Error(
-                            `customDatsClient does not implement ${method} method.`
-                        )
+                    throw new Error(
+                        `customDatsClient does not implement ${method} method.`
                     );
             }
             stats = customDatsClient;
@@ -136,6 +133,7 @@ module.exports = fp(
                   })
                 : clientMock();
         }
+        await stats.connect();
 
         fastify.decorate('stats', stats);
         fastify.decorate('hrtime2ns', hrtime2ns);
@@ -189,8 +187,6 @@ module.exports = fp(
         if (enabledMetrics.errors) {
             fastify.addHook('onError', errorsCounter);
         }
-
-        next();
     },
     {
         name: '@immobiliarelabs/fastify-metrics',
