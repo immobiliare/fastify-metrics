@@ -5,7 +5,7 @@ const sinon = require('sinon');
 const { StatsdMock } = require('./helpers/statsd');
 const { hrtime2ms } = require('@dnlup/hrtime-utils');
 
-const PLUGINS_METHODS = [
+const PLUGIN_METHODS = [
     'counter',
     'timing',
     'gauge',
@@ -34,7 +34,7 @@ async function configMacro(t, options) {
     t.true(server.hasDecorator('hrtime2ns'));
     t.true(server.hasDecorator('hrtime2ms'));
     t.true(server.hasDecorator('hrtime2s'));
-    for (const method of PLUGINS_METHODS) {
+    for (const method of PLUGIN_METHODS) {
         t.is('function', typeof server.stats[method]);
     }
 }
@@ -509,7 +509,7 @@ test.serial(
             return datsMock;
         };
 
-        for (const method of PLUGINS_METHODS) {
+        for (const method of PLUGIN_METHODS) {
             const error = await t.throwsAsync(
                 async () => {
                     await setup({
