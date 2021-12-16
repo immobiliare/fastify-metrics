@@ -3,6 +3,11 @@ import { FastifyPluginCallback, FastifyPluginAsync } from 'fastify';
 import Client, { Options } from '@immobiliarelabs/dats';
 import { Sampler } from '@dnlup/doc';
 
+type CustomClient = Pick<
+    Client,
+    'gauge' | 'counter' | 'timing' | 'set' | 'close' | 'connect'
+>;
+
 export interface MetricsPluginOptions extends Options {
     sampleInterval?: number;
     collect?: {
@@ -11,6 +16,7 @@ export interface MetricsPluginOptions extends Options {
         errors: boolean;
         health: boolean;
     };
+    customDatsClient?: CustomClient;
 }
 
 export const MetricsPluginCallback: FastifyPluginCallback<MetricsPluginOptions>;

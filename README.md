@@ -138,8 +138,9 @@ This module exports a [plugin registration function](https://github.com/fastify/
 -   `bufferFlushTimeout`: Number. Metrics buffer flush timeout. See [dats](https://github.com/immobiliare/dats#new-clientoptions).
 -   `sampleInterval`: Number. Optional. Sample interval in `ms` used to gather process stats. Defaults to `1000`.
 -   `onError`: Function: `(err) => void`. Optional. This function to handle possible Dats errors. See [dats](https://github.com/immobiliare/dats#new-clientoptions). Default: `(err) => log(err)`
--   `udpDnsCache`: Boolean. Optional. Activate udpDnsCache. Default `true`.
--   `udpDnsCacheTTL`: Number. Optional. DNS cache Time to live of an entry in seconds. Default `120`.
+-   `udpDnsCache`: Boolean. Optional. Activate udpDnsCache. See [dats](https://github.com/immobiliare/dats#new-clientoptions). Default `true`.
+-   `udpDnsCacheTTL`: Number. Optional. See [dats](https://github.com/immobiliare/dats#new-clientoptions). DNS cache Time to live of an entry in seconds. Default `120`.
+-   `customDatsClient`: Dats instance. Optional. The custom Dats client. If set, all fastify-metrics parameters of dats will not work.
 -   `collect`: Object. Optional. Which metrics the plugin should track.
     -   `collect.timings`: Boolean. Collect response timings (`<METRICS_NAMESPACE>.api.<routeId>`). Default: `true`.
     -   `collect.hits`: Boolean. Collect requests count (`<METRICS_NAMESPACE>.api.requests.<routeId>`). Default: `true`.

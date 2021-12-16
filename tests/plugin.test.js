@@ -5,7 +5,14 @@ const sinon = require('sinon');
 const { StatsdMock } = require('./helpers/statsd');
 const { hrtime2ms } = require('@dnlup/hrtime-utils');
 
-const PLUGINS_METHODS = ['counter', 'timing', 'gauge', 'set'];
+const PLUGINS_METHODS = [
+    'counter',
+    'timing',
+    'gauge',
+    'set',
+    'close',
+    'connect',
+];
 
 async function setup(options) {
     const server = require('fastify')();
@@ -461,6 +468,60 @@ test.serial(
                 { instanceOf: Error }
             );
             t.is(error.message, config.message);
+        }
+    }
+);
+
+test.serial('should allow custom dats client', async (t) => {
+    const stub = sinon.stub();
+
+    const datsMock = {
+        counter: stub,
+        set: stub,
+        timing: stub,
+        gauge: stub,
+        close: stub,
+        connect: stub,
+    };
+    const server = await setup({ customDatsClient: datsMock });
+
+    await server.inject({
+        method: 'GET',
+        url: '/',
+    });
+
+    t.true(stub.called);
+});
+
+test.serial(
+    'should throw if custom dats client does not have statsd methods',
+    async (t) => {
+        const generateDatsClient = (missingMethod) => {
+            const datsMock = {
+                counter: () => {},
+                set: () => {},
+                timing: () => {},
+                gauge: () => {},
+                close: () => {},
+                connect: () => {},
+            };
+            delete datsMock[missingMethod];
+            return datsMock;
+        };
+
+        for (const method of PLUGINS_METHODS) {
+            const error = await t.throwsAsync(
+                async () => {
+                    await setup({
+                        customDatsClient: generateDatsClient(method),
+                    });
+                },
+                { instanceOf: Error }
+            );
+            t.is(
+                error.message,
+                `customDatsClient does not implement ${method} method.`
+            );
         }
     }
 );
