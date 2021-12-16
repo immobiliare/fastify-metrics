@@ -3,6 +3,7 @@
 const test = require('ava');
 const sinon = require('sinon');
 const { StatsdMock } = require('./helpers/statsd');
+const StatsdMockTCP = require('./helpers/statsdTCP');
 const { hrtime2ms } = require('@dnlup/hrtime-utils');
 
 const PLUGINS_METHODS = [
@@ -43,10 +44,15 @@ test.beforeEach(async (t) => {
     t.context.statsd = new StatsdMock();
     /* eslint require-atomic-updates: 0 */
     t.context.address = await t.context.statsd.start();
+
+    t.context.statsdTCP = new StatsdMockTCP();
+    /* eslint require-atomic-updates: 0 */
+    t.context.addressTCP = await t.context.statsdTCP.start();
 });
 
 test.afterEach(async (t) => {
     await t.context.statsd.stop();
+    await t.context.statsdTCP.stop();
 });
 
 test.serial('configuration without options', configMacro);
@@ -123,6 +129,35 @@ test.serial('sending requests metrics', async (t) => {
                 if (cursor >= regexes.length) {
                     resolve();
                 }
+            });
+        }),
+    ]);
+});
+
+test.serial('sending requests metrics TCP', async (t) => {
+    t.plan(2);
+    const server = await setup({
+        host: `tcp://127.0.0.1:${t.context.addressTCP.port}`,
+        namespace: 'ns',
+        sampleInterval: 1000,
+    });
+    await Promise.all([
+        server.inject({
+            method: 'GET',
+            url: '/',
+        }),
+        new Promise((resolve) => {
+            const regexes = [
+                /ns\.api\.noId\.requests:1\|c/,
+                /ns\.api\.noId.response_time:\d+(\.\d+)?\|ms/,
+            ];
+            t.context.statsdTCP.on('metric', (buffer) => {
+                let metrics = buffer.toString().split('\n').filter(Boolean);
+
+                for (let [i, regex] of regexes.entries()) {
+                    t.regex(metrics[i], regex, `${metrics[i]} is not listed`);
+                }
+                resolve();
             });
         }),
     ]);
