@@ -42,6 +42,7 @@ function sendHealthData(
 }
 
 function onClose(instance, done) {
+    instance.doc && instance.doc.stop();
     instance.stats.close(done);
 }
 

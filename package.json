@@ -26,7 +26,7 @@
     ],
     "scripts": {
         "lint": "eslint --fix --ignore-path .gitignore .",
-        "test": "tsd && nyc --reporter=lcov --reporter=text-summary ava && nyc check-coverage --lines 100 --branches 100 --functions 100",
+        "test": "tsd && tap",
         "bench:base": "concurrently -k -s first \"node benchmarks/fixtures/base.js\" \"node -e 'setTimeout(() => {}, 1000)' && npx autocannon -c 100 -d 30 http://localhost:3000\"",
         "bench": "concurrently -k -s first \"node benchmarks/fixtures/withMetrics.js\" \"node benchmarks/fixtures/statsd.js\" \"node -e 'setTimeout(() => {}, 1000)' && npx autocannon -c 100 -d 30 http://localhost:3001\"",
         "toc": "markdown-toc -i README.md",
@@ -45,6 +45,8 @@
         "node": ">=12.19"
     },
     "devDependencies": {
+        "@commitlint/cli": "^15.0.0",
+        "@commitlint/config-conventional": "^15.0.0",
         "@saithodev/semantic-release-backmerge": "^2.0.0",
         "@semantic-release/changelog": "^6.0.0",
         "@semantic-release/commit-analyzer": "^9.0.1",
@@ -52,13 +54,10 @@
         "@semantic-release/github": "^8.0.1",
         "@semantic-release/npm": "^8.0.2",
         "@semantic-release/release-notes-generator": "^10.0.2",
-        "@commitlint/cli": "^15.0.0",
-        "@commitlint/config-conventional": "^15.0.0",
         "@types/node": "^16.3.1",
         "@typescript-eslint/eslint-plugin": "^5.0.0",
         "@typescript-eslint/parser": "^5.0.0",
         "autocannon": "^7.0.0",
-        "ava": "^3.9.0",
         "concurrently": "^6.0.0",
         "eslint": "^8.0.0",
         "eslint-config-prettier": "^8.0.0",
@@ -72,6 +71,7 @@
         "nyc": "^15.1.0",
         "prettier": "^2.0.5",
         "sinon": "^12.0.1",
+        "tap": "^15.1.5",
         "tsd": "^0.19.0",
         "typescript": "^4.3.5"
     },
