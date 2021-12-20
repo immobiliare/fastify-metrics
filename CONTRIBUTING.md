@@ -1,5 +1,9 @@
 # Contributing
 
+### Supported Node.js versions
+
+All the current LTS versions are supported.
+
 ### npm scripts
 
 ```bash
