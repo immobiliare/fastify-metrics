@@ -4,6 +4,10 @@ const fp = require('fastify-plugin');
 const { default: Client } = require('@immobiliarelabs/dats');
 const doc = require('@dnlup/doc');
 const { hrtime2ns, hrtime2ms, hrtime2s } = require('@dnlup/hrtime-utils');
+const hooks = require('./lib/hooks');
+const staticMode = require('./lib/routes/static');
+const dynamicMode = require('./lib/routes/dynamic');
+
 const STATSD_METHODS = [
     'counter',
     'timing',
@@ -41,45 +45,28 @@ function sendHealthData(
     stats.gauge('process.cpu', cpu);
 }
 
-function onClose(instance, done) {
-    instance.doc && instance.doc.stop();
-    instance.stats.close(done);
-}
-
-function hitsCounter(request, reply, next) {
-    this.stats.counter(`api.${request.metrics.id}.requests`);
-    next();
-}
-
-function responseTiming(request, reply, next) {
-    this.stats.timing(
-        `api.${request.metrics.id}.response_time`,
-        reply.getResponseTime()
-    );
-    next();
-}
-
-function errorsCounter(request, reply, error, done) {
-    this.stats.counter(`api.${request.metrics.id}.errors.${reply.statusCode}`);
-    done();
-}
-
 /**
- * Default metrics that are enabled
+ * Default configuration for metrics collected.
  */
-const COLLECT = {
-    /**
-     * Response time
-     */
-    timing: true,
-    /**
-     * Route hit counter
-     */
-    hits: true,
-    /**
-     * Route errors counter
-     */
-    errors: true,
+const DEFAULT_COLLECT_OPTIONS = {
+    routes: {
+        mode: 'static',
+        prefix: '',
+        /**
+         * Response time
+         * TODO: rename in responseTime
+         */
+        timing: true,
+        // TODO: add responseSize
+        /**
+         * Route hit counter
+         */
+        hits: true,
+        /**
+         * Route errors counter
+         */
+        errors: true,
+    },
     /**
      * Health data
      */
@@ -102,12 +89,38 @@ module.exports = fp(
             onError = (error) => void fastify.log.error(error),
         }
     ) {
-        const enabledMetrics = Object.assign({}, COLLECT, collect);
+        // TODO: allow to pass routes: false to disable the routes alltoghether.
+        const { routes, ...others } = collect;
+        const { routes: defaultRoutes, ...defaultOthers } =
+            DEFAULT_COLLECT_OPTIONS;
+        const metricsConfig = {
+            routes: {
+                ...defaultRoutes,
+                ...routes,
+            },
+            ...defaultOthers,
+            ...others,
+        };
 
-        for (const key of ['timing', 'hits', 'errors', 'health']) {
-            if (typeof enabledMetrics[key] !== 'boolean') {
-                throw new Error(`"${key}" must be a Boolean.`);
+        for (const key of ['timing', 'hits', 'errors']) {
+            if (typeof metricsConfig.routes[key] !== 'boolean') {
+                throw new Error(`"${key}" must be a boolean.`);
             }
+        }
+        if (typeof metricsConfig.health !== 'boolean') {
+            throw new Error(`"health" must be a boolean.`);
+        }
+        const { prefix, mode } = metricsConfig.routes;
+        if (typeof prefix !== 'string') {
+            throw new Error('"prefix" must be a string.');
+        }
+        if (prefix.startsWith('.') || prefix.endsWith('.')) {
+            metricsConfig.routes.prefix = prefix.replace(/(^\.+|\.+$)/g, '');
+        }
+        if (mode !== 'static' && mode !== 'dynamic') {
+            throw new Error(
+                '"mode" must be one of these values: "static", "dynamic".'
+            );
         }
 
         let stats;
@@ -136,12 +149,17 @@ module.exports = fp(
         }
         await stats.connect();
 
-        fastify.decorate('stats', stats);
+        fastify.decorate(
+            'metricsNamespace',
+            typeof namespace === 'string' ? namespace : ''
+        );
+        fastify.decorate('metricsRoutesPrefix', metricsConfig.routes.prefix);
+        fastify.decorate('metricsClient', stats);
         fastify.decorate('hrtime2ns', hrtime2ns);
         fastify.decorate('hrtime2ms', hrtime2ms);
         fastify.decorate('hrtime2s', hrtime2s);
 
-        if (enabledMetrics.health) {
+        if (metricsConfig.health) {
             const sampler = doc({ sampleInterval });
             fastify.decorate('doc', sampler);
             const onSample = function () {
@@ -160,33 +178,100 @@ module.exports = fp(
         }
 
         if (
-            enabledMetrics.timing ||
-            enabledMetrics.errors ||
-            enabledMetrics.hits
+            metricsConfig.routes.timing ||
+            metricsConfig.routes.errors ||
+            metricsConfig.routes.hits
         ) {
-            /**
-             * Assign a default route id if not defined in the reply
-             * config options.
-             * @see https://www.fastify.io/docs/latest/Routes/#config
-             */
-            fastify.addHook('onRequest', function (request, reply, next) {
-                request.metrics = {
-                    id: reply.context.config.routeId || 'noId',
-                };
-                next();
-            });
+            if (mode === 'dynamic') {
+                let getLabel =
+                    metricsConfig.routes.getLabel || dynamicMode.getLabel;
+                if (typeof getLabel !== 'function') {
+                    throw new Error('"getLabel" must be a function.');
+                }
+                getLabel = getLabel.bind(fastify);
+                fastify.decorateRequest('metricsLabel', '');
+                fastify.decorateReply('metricsLabel', '');
+                fastify.addHook('onRequest', function (request, reply, next) {
+                    const label = getLabel(request, reply);
+                    request.metricsLabel = label;
+                    reply.metricsLabel = label;
+                    next();
+                });
+            } else {
+                const getLabel =
+                    metricsConfig.routes.getLabel || staticMode.getLabel;
+                if (typeof getLabel !== 'function') {
+                    throw new Error('"getLabel" must be a function.');
+                }
+                fastify.addHook('onRoute', (options) => {
+                    // TODO: check for duplicates when registering routes
+                    options.config = options.config || {};
+                    options.config.metrics = options.config.metrics || {};
+                    options.config.metrics.label = getLabel(prefix, options);
+                });
+            }
         }
 
-        fastify.addHook('onClose', onClose);
+        fastify.addHook('onClose', hooks.onClose);
 
-        if (enabledMetrics.hits) {
-            fastify.addHook('onRequest', hitsCounter);
+        fastify.decorateRequest(
+            'sendTimingMetric',
+            mode === 'static'
+                ? staticMode.bindTimingMetric(stats)
+                : dynamicMode.bindTimingMetric(stats)
+        );
+        fastify.decorateRequest(
+            'sendCounterMetric',
+            mode === 'static'
+                ? staticMode.bindCounterMetric(stats)
+                : dynamicMode.bindCounterMetric(stats)
+        );
+        fastify.decorateRequest(
+            'sendGaugeMetric',
+            mode === 'static'
+                ? staticMode.bindGaugeMetric(stats)
+                : dynamicMode.bindGaugeMetric(stats)
+        );
+        fastify.decorateRequest(
+            'sendSetMetric',
+            mode === 'static'
+                ? staticMode.bindSetMetric(stats)
+                : dynamicMode.bindSetMetric(stats)
+        );
+
+        fastify.decorateReply(
+            'sendTimingMetric',
+            mode === 'static'
+                ? staticMode.bindTimingMetric(stats)
+                : dynamicMode.bindTimingMetric(stats)
+        );
+        fastify.decorateReply(
+            'sendCounterMetric',
+            mode === 'static'
+                ? staticMode.bindCounterMetric(stats)
+                : dynamicMode.bindCounterMetric(stats)
+        );
+        fastify.decorateReply(
+            'sendGaugeMetric',
+            mode === 'static'
+                ? staticMode.bindGaugeMetric(stats)
+                : dynamicMode.bindGaugeMetric(stats)
+        );
+        fastify.decorateReply(
+            'sendSetMetric',
+            mode === 'static'
+                ? staticMode.bindSetMetric(stats)
+                : dynamicMode.bindSetMetric(stats)
+        );
+
+        if (metricsConfig.routes.hits) {
+            fastify.addHook('onRequest', hooks.onRequest);
         }
-        if (enabledMetrics.timing) {
-            fastify.addHook('onResponse', responseTiming);
+        if (metricsConfig.routes.timing) {
+            fastify.addHook('onResponse', hooks.onResponse);
         }
-        if (enabledMetrics.errors) {
-            fastify.addHook('onError', errorsCounter);
+        if (metricsConfig.routes.errors) {
+            fastify.addHook('onError', hooks.onError);
         }
     },
     {
