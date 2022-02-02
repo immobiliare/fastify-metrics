@@ -16,9 +16,8 @@ jobs:
               uses: actions/setup-node@v2
               with:
                   node-version: lts/*
-            - uses: bahmutov/npm-install@v1
-              with:
-                  useLockFile: false
+                  cache: 'npm'
+            - run: npm i # cached
             - name: Run Benchmark
               run: npm run bench
 
@@ -32,8 +31,7 @@ jobs:
               uses: actions/setup-node@v2
               with:
                   node-version: lts/*
-            - uses: bahmutov/npm-install@v1
-              with:
-                  useLockFile: false
+                  cache: 'npm'
+            - run: npm i
             - name: Run Benchmark
               run: npm run bench

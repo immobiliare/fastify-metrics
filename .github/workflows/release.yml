@@ -21,25 +21,22 @@ jobs:
             - uses: actions/setup-node@v2
               with:
                   node-version: ${{ matrix.node-version }}
-            - uses: bahmutov/npm-install@v1
-              with:
-                  useLockFile: false
-            - run: npm t
+                  cache: 'npm'
+            - run: npm i # cached
 
     release:
         needs: [test]
         runs-on: ubuntu-latest
         steps:
-            - uses: actions/setup-node@v2
-              with:
-                  node-version: 16
             - uses: actions/checkout@v2
               with:
                   token: ${{ secrets.GITHUB_TOKEN }}
 
-            - uses: bahmutov/npm-install@v1
+            - uses: actions/setup-node@v2
               with:
-                  useLockFile: false
+                  node-version: 16
+                  cache: 'npm'
+            - run: npm i # cached
 
             - name: Semantic release
               uses: codfish/semantic-release-action@v1
