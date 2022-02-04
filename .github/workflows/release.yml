@@ -17,9 +17,6 @@ jobs:
             - uses: actions/setup-node@v2
               with:
                   node-version: ${{ matrix.node-version }}
-                  cache: 'npm'
-            - name: HOTIFX Downgrade npm
-              run: npm i -g npm@8.3
             - run: npm i # cached
 
     release:
@@ -33,9 +30,6 @@ jobs:
             - uses: actions/setup-node@v2
               with:
                   node-version: 16
-                  cache: 'npm'
-            - name: HOTIFX Downgrade npm
-              run: npm i -g npm@8.3
             - run: npm i # cached
 
             - name: Semantic release
