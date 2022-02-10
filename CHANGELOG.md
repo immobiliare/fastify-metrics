@@ -1,3 +1,27 @@
+# [2.0.0-next.1](https://github.com/immobiliare/fastify-metrics/compare/v1.0.0...v2.0.0-next.1) (2022-02-10)
+
+
+### Bug Fixes
+
+* **TCP:** fixed tcp ([58690d2](https://github.com/immobiliare/fastify-metrics/commit/58690d2aa6af36d5efe171854ef9e59e320fff00))
+* **types:** fix wrong export name ([119fdc3](https://github.com/immobiliare/fastify-metrics/commit/119fdc31f2c0fde7c017340bb3cfeaaa26cac530))
+
+
+### Features
+
+* allow custom Dats client ([40de470](https://github.com/immobiliare/fastify-metrics/commit/40de47026d02bc8dbb1a4c10be85cc09fc3cdad9))
+* custom route metric label ([efe0131](https://github.com/immobiliare/fastify-metrics/commit/efe0131944d10e3ae9b9b1eecf2a938b3bd07f5f))
+* expose process metrics sampler ([67b69c5](https://github.com/immobiliare/fastify-metrics/commit/67b69c584529d635738ded65e8f784e37c6fe1dd))
+* prerelase ([2d0d1d0](https://github.com/immobiliare/fastify-metrics/commit/2d0d1d0fb881a073164cc26b6a353fcc94465941))
+
+
+### BREAKING CHANGES
+
+* the routes metrics options have changed.
+The default route prefix is now an empty string and not 'api'.
+The dats instance is exported as `metricsCLient`.
+* **types:** the plugin init functions have different names.
+
 # 1.0.0 (2021-11-05)
 
 
