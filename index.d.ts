@@ -82,4 +82,10 @@ declare module 'fastify' {
         sendGaugeMetric: (name: string, value: number) => void;
         sendSetMetric: (name: string, value: number) => void;
     }
+
+    interface FastifyContextConfig {
+        metrics: {
+            routeId: string;
+        };
+    }
 }

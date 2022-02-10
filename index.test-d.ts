@@ -6,6 +6,7 @@ import Fastify, {
     FastifyRequest,
     FastifyReply,
     FastifyInstance,
+    FastifyContextConfig,
 } from 'fastify';
 import Client from '@immobiliarelabs/dats';
 import { Sampler } from '@dnlup/doc';
@@ -36,6 +37,9 @@ fastify.after((err) => {
     expectType<string>(fastify.metricsRoutesPrefix);
 
     fastify.get('/', async function (request, reply) {
+        expectType<FastifyContextConfig>(request.context.config);
+        expectType<{ routeId: string }>(request.context.config.metrics);
+        expectType<string>(request.context.config.metrics.routeId);
         expectType<string | undefined>(request.metricsLabel);
         expectType<typeof Client.prototype.timing>(request.sendTimingMetric);
         expectType<typeof Client.prototype.counter>(request.sendCounterMetric);
