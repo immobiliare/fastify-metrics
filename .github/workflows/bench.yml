@@ -17,6 +17,8 @@ jobs:
               with:
                   node-version: lts/*
                   cache: 'npm'
+            - name: HOTIFX Downgrade npm
+              run: npm i -g npm@8.3
             - run: npm i # cached
             - name: Run Benchmark
               run: npm run bench
@@ -32,6 +34,8 @@ jobs:
               with:
                   node-version: lts/*
                   cache: 'npm'
+            - name: HOTIFX Downgrade npm
+              run: npm i -g npm@8.3                  
             - run: npm i
             - name: Run Benchmark
               run: npm run bench
