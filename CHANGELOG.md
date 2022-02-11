@@ -1,3 +1,10 @@
+# [2.0.0-next.2](https://github.com/immobiliare/fastify-metrics/compare/v2.0.0-next.1...v2.0.0-next.2) (2022-02-11)
+
+
+### Bug Fixes
+
+* **types:** added missing type for FastifyContextConfig ([fa07110](https://github.com/immobiliare/fastify-metrics/commit/fa07110fafebe5374a52f5e2e1d4bec3d8ef9eab))
+
 # [2.0.0-next.1](https://github.com/immobiliare/fastify-metrics/compare/v1.0.0...v2.0.0-next.1) (2022-02-10)
 
 
