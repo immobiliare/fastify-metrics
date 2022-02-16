@@ -188,11 +188,10 @@ module.exports = fp(
                 if (typeof getLabel !== 'function') {
                     throw new Error('"getLabel" must be a function.');
                 }
-                getLabel = getLabel.bind(fastify);
                 fastify.decorateRequest('metricsLabel', '');
                 fastify.decorateReply('metricsLabel', '');
                 fastify.addHook('onRequest', function (request, reply, next) {
-                    const label = getLabel(request, reply);
+                    const label = getLabel.call(this, request, reply);
                     request.metricsLabel = label;
                     reply.metricsLabel = label;
                     next();

@@ -936,8 +936,8 @@ tap.test('metrics collection', async (t) => {
                     },
                 };
                 const app = fastify();
+                app.register(plugin, pluginOpts);
                 app.register(async function (f) {
-                    f.register(plugin, pluginOpts);
                     f.get('/', async function () {
                         return { ok: true };
                     });
@@ -972,7 +972,6 @@ tap.test('metrics collection', async (t) => {
                 });
                 app.register(
                     async function (f) {
-                        f.register(plugin, pluginOpts);
                         f.get('/', async function () {
                             return { ok: true };
                         });
