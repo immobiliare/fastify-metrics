@@ -1,3 +1,10 @@
+# [2.0.0-next.3](https://github.com/immobiliare/fastify-metrics/compare/v2.0.0-next.2...v2.0.0-next.3) (2022-02-16)
+
+
+### Bug Fixes
+
+* **dynamic mode:** fixed this context in getLabel for dynamic mode to be the request context ([0dac171](https://github.com/immobiliare/fastify-metrics/commit/0dac171fb7c3c582b213fd48bde143fb294aaceb))
+
 # [2.0.0-next.2](https://github.com/immobiliare/fastify-metrics/compare/v2.0.0-next.1...v2.0.0-next.2) (2022-02-11)
 
 
