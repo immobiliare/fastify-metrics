@@ -285,6 +285,8 @@ The `getLabel` function in this mode will have the following signature:
 -   `reply`
 -   **Returns:** <`string`> The route label.
 
+The `this` context of the function is bound to the fastify instance of the request.
+
 ## Powered Apps
 
 `fastify-metrics` was created by the amazing Node.js team at ImmobiliareLabs, the Tech dept of [Immobiliare.it](https://www.immobiliare.it), the #1 real estate company in Italy.
