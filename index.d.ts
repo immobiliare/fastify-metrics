@@ -76,7 +76,6 @@ declare module 'fastify' {
     }
 
     interface FastifyReply {
-        metricsLabel?: string;
         sendTimingMetric: typeof Client.prototype.timing;
         sendCounterMetric: typeof Client.prototype.counter;
         sendGaugeMetric: (name: string, value: number) => void;
@@ -85,7 +84,12 @@ declare module 'fastify' {
 
     interface FastifyContextConfig {
         metrics: {
+            /** The id for this route that will be used for the label */
             routeId: string;
+            /** The fastify prefix for this route */
+            fastifyPrefix: string;
+            /** The prefix the pugin should add for the registered routes */
+            routesPrefix: string;
         };
     }
 }

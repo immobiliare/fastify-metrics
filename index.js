@@ -7,6 +7,7 @@ const { hrtime2ns, hrtime2ms, hrtime2s } = require('@dnlup/hrtime-utils');
 const hooks = require('./lib/hooks');
 const staticMode = require('./lib/routes/static');
 const dynamicMode = require('./lib/routes/dynamic');
+const { normalizeFastifyPrefix, normalizeRoutePrefix } = require('./lib/util');
 
 const STATSD_METHODS = [
     'counter',
@@ -182,18 +183,29 @@ module.exports = fp(
             metricsConfig.routes.errors ||
             metricsConfig.routes.hits
         ) {
+            fastify.addHook('onRoute', (options) => {
+                // TODO: check for duplicates when registering routes
+                options.config = options.config || {};
+                options.config.metrics = options.config.metrics || {};
+                options.config.metrics.fastifyPrefix = normalizeFastifyPrefix(
+                    options.prefix
+                );
+                options.config.metrics.routesPrefix =
+                    normalizeRoutePrefix(prefix);
+            });
             if (mode === 'dynamic') {
                 let getLabel =
                     metricsConfig.routes.getLabel || dynamicMode.getLabel;
                 if (typeof getLabel !== 'function') {
                     throw new Error('"getLabel" must be a function.');
                 }
-                fastify.decorateRequest('metricsLabel', '');
-                fastify.decorateReply('metricsLabel', '');
+                fastify.decorateRequest('_metricsLabel', '');
+                fastify.decorateReply('_metricsLabel', '');
                 fastify.addHook('onRequest', function (request, reply, next) {
+                    // TODO: skip noId routes here and in hooks.
                     const label = getLabel.call(this, request, reply);
-                    request.metricsLabel = label;
-                    reply.metricsLabel = label;
+                    request._metricsLabel = label;
+                    reply._metricsLabel = label;
                     next();
                 });
             } else {
@@ -202,10 +214,8 @@ module.exports = fp(
                 if (typeof getLabel !== 'function') {
                     throw new Error('"getLabel" must be a function.');
                 }
+                // TODO: skip noId routes here and in hooks.
                 fastify.addHook('onRoute', (options) => {
-                    // TODO: check for duplicates when registering routes
-                    options.config = options.config || {};
-                    options.config.metrics = options.config.metrics || {};
                     options.config.metrics.label = getLabel(prefix, options);
                 });
             }
