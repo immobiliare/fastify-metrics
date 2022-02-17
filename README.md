@@ -41,6 +41,7 @@ It supports Fastify versions `>=3.0.0`.
         -   [`sendGaugeMetric(name, value)`](#sendgaugemetricname-value)
         -   [`sendSetMetric(name, value)`](#sendsetmetricname-value)
 -   [Hooks](#hooks)
+-   [Request and Reply context](#request-and-reply-context)
 -   [API](#api)
     -   [Configuration `options`](#configuration-options)
         -   [Routes labels generation modes](#routes-labels-generation-modes)
@@ -88,7 +89,9 @@ fastify.register(require('@immobiliarelabs/fastify-metrics'), {
 const route = {
     // This is required in order to associate a metric to a route
     config: {
-        routeId: 'root.getStatus',
+        metrics: {
+            routeId: 'root.getStatus',
+        },
     },
     url: '/',
     method: 'GET',
@@ -103,9 +106,12 @@ fastify.listen(3000);
 
 ### Notes
 
-The plugin uses the key `routeId` in the `config` object of the `Reply.context`. If none is found a default `noId` string is used.
+The plugin uses the key `routeId` in the `metrics` object of the `config` object in the `Request.context` or `Reply.context`. If none is found a default `noId` string is used.
 
-See https://github.com/fastify/fastify/blob/master/docs/Routes.md#config.
+See
+
+-   https://github.com/fastify/fastify/blob/master/docs/Routes.md#config
+-   [request and reply context](#request-and-reply-context)
 
 ## Metrics collected
 
@@ -208,6 +214,16 @@ The plugin uses the following hooks:
 -   `onResponse`: to measure response time
 -   `onError`: to count errors
 
+## Request and Reply context
+
+The plugin adds a `metrics` object to the context for convenience with the following properties:
+
+-   `routeId` <`string`>: the id for the current route
+-   `fastifyPrefix` <`string`>: the prefix of the fastify instance registering the route, with the `/` replaced with `.` and without the `.` at the beginning.
+-   `routesPrefix` <`string`>: the routes prefix passed to the plugin options and without `.` at the beginning and end.
+
+These properties can be useful when using a custom [`getLabel`](routes-labels-generation-modes) function.
+
 ## API
 
 This module exports a [plugin registration function](https://github.com/fastify/fastify/blob/master/docs/Plugins-Guide.md#register).
@@ -267,7 +283,7 @@ The `getLabel` function in this mode will have the following signature:
 
 -   `prefix` <`string`> The plugin routes prefix value.
 -   `options` [<`Object`>](https://www.fastify.io/docs/latest/Reference/Hooks/#onroute) The route registration options.
--   **Returns:** <`string`> The route label.
+-   **Returns:** <`string`> The route label string without any `.` at the beginning or end.
 
 ##### `dynamic`
 
@@ -283,7 +299,7 @@ The `getLabel` function in this mode will have the following signature:
 
 -   `request`
 -   `reply`
--   **Returns:** <`string`> The route label.
+-   **Returns:** <`string`> The route label string without any `.` at the beginning or end.
 
 The `this` context of the function is bound to the fastify instance of the request.
 

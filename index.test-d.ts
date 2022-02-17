@@ -38,7 +38,11 @@ fastify.after((err) => {
 
     fastify.get('/', async function (request, reply) {
         expectType<FastifyContextConfig>(request.context.config);
-        expectType<{ routeId: string }>(request.context.config.metrics);
+        expectType<{
+            routeId: string;
+            fastifyPrefix: string;
+            routesPrefix: string;
+        }>(request.context.config.metrics);
         expectType<string>(request.context.config.metrics.routeId);
         expectType<string | undefined>(request.metricsLabel);
         expectType<typeof Client.prototype.timing>(request.sendTimingMetric);
@@ -50,7 +54,6 @@ fastify.after((err) => {
             (name: string, value: number) => void
         >(request.sendSetMetric);
 
-        expectType<string | undefined>(reply.metricsLabel);
         expectType<typeof Client.prototype.timing>(reply.sendTimingMetric);
         expectType<typeof Client.prototype.counter>(reply.sendCounterMetric);
         expectType<
