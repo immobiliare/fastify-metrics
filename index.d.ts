@@ -21,8 +21,18 @@ type GetDynamicRouteLabel = (
     reply: FastifyReply
 ) => string;
 type GetStaticRouteLabel = (
-    prefix: string,
-    options: RouteOptions & { routePath: string; path: string; prefix: string }
+    options: RouteOptions & {
+        routePath: string;
+        path: string;
+        prefix: string;
+        config: {
+            metrics: {
+                routeId: string;
+                fastifyPrefix: string;
+                routesPrefix: string;
+            };
+        };
+    }
 ) => string;
 
 type CommonRouteOptions = {
