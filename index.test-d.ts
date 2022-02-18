@@ -100,8 +100,8 @@ expectType(
         collect: {
             routes: {
                 mode: 'static',
-                getLabel: (prefix, options) =>
-                    `${prefix}.${options.routePath.replace('/', '.')}`,
+                getLabel: (options) =>
+                    `${options.config.metrics.fastifyPrefix}.${options.config.metrics.routesPrefix}.${options.config.metrics.routeId}`,
             },
         },
     })
@@ -115,7 +115,21 @@ expectType(
                 getLabel: function (request, reply) {
                     expectType<FastifyInstance>(this);
                     expectType<FastifyRequest>(request);
+                    expectType<string>(
+                        request.context.config.metrics.fastifyPrefix
+                    );
+                    expectType<string>(
+                        request.context.config.metrics.routesPrefix
+                    );
+                    expectType<string>(request.context.config.metrics.routeId);
                     expectType<FastifyReply>(reply);
+                    expectType<string>(
+                        reply.context.config.metrics.fastifyPrefix
+                    );
+                    expectType<string>(
+                        reply.context.config.metrics.routesPrefix
+                    );
+                    expectType<string>(reply.context.config.metrics.routeId);
                     return 'label';
                 },
             },

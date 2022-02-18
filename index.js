@@ -7,7 +7,12 @@ const { hrtime2ns, hrtime2ms, hrtime2s } = require('@dnlup/hrtime-utils');
 const hooks = require('./lib/hooks');
 const staticMode = require('./lib/routes/static');
 const dynamicMode = require('./lib/routes/dynamic');
-const { normalizeFastifyPrefix, normalizeRoutePrefix } = require('./lib/util');
+const {
+    getRouteId,
+    normalizeFastifyPrefix,
+    normalizeRoutePrefix,
+} = require('./lib/util');
+const { kMetricsLabel } = require('./lib/symbols');
 
 const STATSD_METHODS = [
     'counter',
@@ -187,11 +192,13 @@ module.exports = fp(
                 // TODO: check for duplicates when registering routes
                 options.config = options.config || {};
                 options.config.metrics = options.config.metrics || {};
+                options.config.metrics.routeId = getRouteId(options.config);
                 options.config.metrics.fastifyPrefix = normalizeFastifyPrefix(
                     options.prefix
                 );
                 options.config.metrics.routesPrefix =
                     normalizeRoutePrefix(prefix);
+                options.config.metrics[kMetricsLabel] = '';
             });
             if (mode === 'dynamic') {
                 let getLabel =
@@ -199,13 +206,13 @@ module.exports = fp(
                 if (typeof getLabel !== 'function') {
                     throw new Error('"getLabel" must be a function.');
                 }
-                fastify.decorateRequest('_metricsLabel', '');
-                fastify.decorateReply('_metricsLabel', '');
+                fastify.decorateRequest(kMetricsLabel, '');
+                fastify.decorateReply(kMetricsLabel, '');
                 fastify.addHook('onRequest', function (request, reply, next) {
                     // TODO: skip noId routes here and in hooks.
                     const label = getLabel.call(this, request, reply);
-                    request._metricsLabel = label;
-                    reply._metricsLabel = label;
+                    request[kMetricsLabel] = label;
+                    reply[kMetricsLabel] = label;
                     next();
                 });
             } else {
@@ -216,7 +223,7 @@ module.exports = fp(
                 }
                 // TODO: skip noId routes here and in hooks.
                 fastify.addHook('onRoute', (options) => {
-                    options.config.metrics.label = getLabel(prefix, options);
+                    options.config.metrics[kMetricsLabel] = getLabel(options);
                 });
             }
         }

@@ -692,15 +692,17 @@ tap.test('metrics collection', async (t) => {
                     namespace: 'static_routes_custom_getlabel_test',
                     collect: {
                         routes: {
-                            getLabel: function (prefix, options) {
+                            getLabel: function (options) {
                                 t.ok(typeof options.prefix === 'string');
-                                t.ok(prefix === '');
+                                t.ok(options.config);
+                                t.ok(options.config.metrics);
+                                t.ok(
+                                    options.config.metrics.routesPrefix === ''
+                                );
                                 t.ok(options.method);
                                 t.ok(options.url);
                                 t.ok(options.path);
                                 t.ok(options.handler);
-                                t.ok(options.config);
-                                t.ok(options.config.metrics);
                                 return 'customLabel';
                             },
                         },
@@ -804,15 +806,18 @@ tap.test('metrics collection', async (t) => {
                     collect: {
                         routes: {
                             prefix: 'prefix',
-                            getLabel: function (prefix, options) {
+                            getLabel: function (options) {
                                 t.ok(typeof options.prefix === 'string');
-                                t.ok(prefix === 'prefix');
+                                t.ok(options.config);
+                                t.ok(options.config.metrics);
+                                t.ok(
+                                    options.config.metrics.routesPrefix ===
+                                        'prefix'
+                                );
                                 t.ok(options.method);
                                 t.ok(options.url);
                                 t.ok(options.path);
                                 t.ok(options.handler);
-                                t.ok(options.config);
-                                t.ok(options.config.metrics);
                                 return 'customLabel';
                             },
                         },

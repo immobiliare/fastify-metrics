@@ -47,7 +47,7 @@ It supports Fastify versions `>=3.0.0`.
         -   [Routes labels generation modes](#routes-labels-generation-modes)
             -   [computedPrefix](#computedprefix)
             *   [`static`](#static)
-                -   [`getLabel(prefix, options)`](#getlabelprefix-options)
+                -   [`getLabel(options)`](#getlabeloptions)
             *   [`dynamic`](#dynamic)
                 -   [`getLabel(request, reply)`](#getlabelrequest-reply)
 -   [Powered Apps](#powered-apps)
@@ -279,10 +279,14 @@ In this mode a [`onRoute` hook](https://www.fastify.io/docs/latest/Reference/Hoo
 
 The `getLabel` function in this mode will have the following signature:
 
-###### `getLabel(prefix, options)`
+###### `getLabel(options)`
 
--   `prefix` <`string`> The plugin routes prefix value.
--   `options` [<`Object`>](https://www.fastify.io/docs/latest/Reference/Hooks/#onroute) The route registration options.
+-   `options` [<`Object`>](https://www.fastify.io/docs/latest/Reference/Hooks/#onroute) The route registration
+    -   `config`
+        -   `metrics`
+            -   `routeId` <`string`>: the id used to initialize the route.
+            -   `fastifyPrefix` <`string`>: the normalized prefix of the fastify instance registering the route.
+            -   `routesPrefix` <`string`>: the normalized routes prefix passed to the plugin options.
 -   **Returns:** <`string`> The route label string without any `.` at the beginning or end.
 
 ##### `dynamic`
