@@ -81,15 +81,15 @@ declare module 'fastify' {
         metricsLabel?: string;
         sendTimingMetric: typeof Client.prototype.timing;
         sendCounterMetric: typeof Client.prototype.counter;
-        sendGaugeMetric: (name: string, value: number) => void;
-        sendSetMetric: (name: string, value: number) => void;
+        sendGaugeMetric: typeof Client.prototype.gauge;
+        sendSetMetric: typeof Client.prototype.set;
     }
 
     interface FastifyReply {
         sendTimingMetric: typeof Client.prototype.timing;
         sendCounterMetric: typeof Client.prototype.counter;
-        sendGaugeMetric: (name: string, value: number) => void;
-        sendSetMetric: (name: string, value: number) => void;
+        sendGaugeMetric: typeof Client.prototype.gauge;
+        sendSetMetric: typeof Client.prototype.set;
     }
 
     interface FastifyContextConfig {
