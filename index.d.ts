@@ -78,7 +78,6 @@ declare module 'fastify' {
     }
 
     interface FastifyRequest {
-        metricsLabel?: string;
         sendTimingMetric: typeof Client.prototype.timing;
         sendCounterMetric: typeof Client.prototype.counter;
         sendGaugeMetric: typeof Client.prototype.gauge;

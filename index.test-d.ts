@@ -44,7 +44,6 @@ fastify.after((err) => {
             routesPrefix: string;
         }>(request.context.config.metrics);
         expectType<string>(request.context.config.metrics.routeId);
-        expectType<string | undefined>(request.metricsLabel);
         expectType<typeof Client.prototype.timing>(request.sendTimingMetric);
         expectType<typeof Client.prototype.counter>(request.sendCounterMetric);
         expectType<typeof Client.prototype.gauge>(request.sendGaugeMetric);
