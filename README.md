@@ -28,13 +28,16 @@ It supports Fastify versions `>=3.0.0`.
 -   [Metrics collected](#metrics-collected)
 -   [Decorators](#decorators)
     -   [Fastify decorators](#fastify-decorators)
-        -   [`metricsNamespace`](#metricsnamespace)
-        *   [`metricsRoutesPrefix`](#metricsroutesprefix)
-        *   [`metricsClient`](#metricsclient)
-        *   [`doc`](#doc)
-        *   [`hrtime2ns`](#hrtime2ns)
-        *   [`hrtime2ms`](#hrtime2ms)
-        *   [`hrtime2s`](#hrtime2s)
+        -   [`metrics`](#metrics)
+            -   [`metrics.namespace`](#metricsnamespace)
+            -   [`metrics.fastifyPrefix`](#metricsfastifyprefix)
+            -   [`metrics.routesPrefix`](#metricsroutesprefix)
+            -   [`metrics.client`](#metricsclient)
+            -   [`metrics.sampler`](#metricssampler)
+            -   [`metrics.hrtime2us`](#metricshrtime2us)
+            -   [`metrics.hrtime2ns`](#metricshrtime2ns)
+            -   [`metrics.hrtime2ms`](#metricshrtime2ms)
+            -   [`metrics.hrtime2s`](#metricshrtime2s)
     -   [Request and Reply decorators](#request-and-reply-decorators)
         -   [`sendTimingMetric(name[, value])`](#sendtimingmetricname-value)
         -   [`sendCounterMetric(name[, value])`](#sendcountermetricname-value)
@@ -136,39 +139,57 @@ The plugin adds some decorators to both the fastify instance and the reply objec
 
 ### Fastify decorators
 
-##### `metricsNamespace`
+#### `metrics`
+
+-   <`object`>
+
+An object containing the following properties:
+
+##### `metrics.namespace`
 
 -   <`string`>
 
 The `namespace` passed to the plugin configuration option.
 
-#### `metricsRoutesPrefix`
+##### `metrics.fastifyPrefix`
 
 -   <`string`>
 
-The routes `prefix` passed to the `collect.routes.prefix` option.
+The normalized fastify instance `prefix`.
 
-#### `metricsClient`
+##### `metrics.routesPrefix`
+
+-   <`string`>
+
+The normalized routes `prefix` passed to the `collect.routes.prefix` option.
+
+##### `metrics.client`
 
 The [Dats](https://github.com/immobiliare/dats) instance.
 
-#### `doc`
+##### `metrics.sampler`
 
-The [doc](https://github.com/dnlup/doc) instance used to sample process metrics, if `options.collect.health` is `true`.
+The [sampler](https://github.com/dnlup/doc) instance used to sample process metrics, if `options.collect.health` is `true`.
 
-#### `hrtime2ns`
+##### `metrics.hrtime2us`
+
+A utility function to convert the legacy `process.hrtime([time])` value to microseconds.
+
+See [hrtime-utils](https://github.com/dnlup/hrtime-utils#hrtime2ustime).
+
+##### `metrics.hrtime2ns`
 
 A utility function to convert the legacy `process.hrtime([time])` value to nanoseconds.
 
 See [hrtime-utils](https://github.com/dnlup/hrtime-utils#hrtime2nstime).
 
-#### `hrtime2ms`
+##### `metrics.hrtime2ms`
 
 A utility function to convert the legacy `process.hrtime([time])` value to milliseconds.
 
 See [hrtime-utils](https://github.com/dnlup/hrtime-utils#hrtime2mstime).
 
-#### `hrtime2s`
+##### `metrics.hrtime2s`
 
 A utility function to convert the legacy `process.hrtime([time])` value to seconds.
 

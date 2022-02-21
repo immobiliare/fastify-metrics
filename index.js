@@ -3,7 +3,12 @@
 const fp = require('fastify-plugin');
 const { default: Client } = require('@immobiliarelabs/dats');
 const doc = require('@dnlup/doc');
-const { hrtime2ns, hrtime2ms, hrtime2s } = require('@dnlup/hrtime-utils');
+const {
+    hrtime2us,
+    hrtime2ns,
+    hrtime2ms,
+    hrtime2s,
+} = require('@dnlup/hrtime-utils');
 const hooks = require('./lib/hooks');
 const staticMode = require('./lib/routes/static');
 const dynamicMode = require('./lib/routes/dynamic');
@@ -153,20 +158,9 @@ module.exports = fp(
                   })
                 : clientMock();
         }
-        await stats.connect();
-
-        fastify.decorate(
-            'metricsNamespace',
-            typeof namespace === 'string' ? namespace : ''
-        );
-        fastify.decorate('metricsRoutesPrefix', metricsConfig.routes.prefix);
-        fastify.decorate('metricsClient', stats);
-        fastify.decorate('hrtime2ns', hrtime2ns);
-        fastify.decorate('hrtime2ms', hrtime2ms);
-        fastify.decorate('hrtime2s', hrtime2s);
-
+        let sampler;
         if (metricsConfig.health) {
-            const sampler = doc({ sampleInterval });
+            sampler = doc({ sampleInterval });
             fastify.decorate('doc', sampler);
             const onSample = function () {
                 sendHealthData(
@@ -183,6 +177,21 @@ module.exports = fp(
             sampler.on('sample', onSample);
         }
 
+        await stats.connect();
+
+        const metrics = Object.freeze({
+            namespace: typeof namespace === 'string' ? namespace : '',
+            routesPrefix: normalizeRoutePrefix(metricsConfig.routes.prefix),
+            fastifyPrefix: normalizeFastifyPrefix(fastify.prefix),
+            client: stats,
+            sampler,
+            hrtime2us,
+            hrtime2ns,
+            hrtime2ms,
+            hrtime2s,
+        });
+        fastify.decorate('metrics', metrics);
+
         if (
             metricsConfig.routes.timing ||
             metricsConfig.routes.errors ||
@@ -196,8 +205,7 @@ module.exports = fp(
                 options.config.metrics.fastifyPrefix = normalizeFastifyPrefix(
                     options.prefix
                 );
-                options.config.metrics.routesPrefix =
-                    normalizeRoutePrefix(prefix);
+                options.config.metrics.routesPrefix = metrics.routesPrefix;
                 options.config.metrics[kMetricsLabel] = '';
             });
             if (mode === 'dynamic') {

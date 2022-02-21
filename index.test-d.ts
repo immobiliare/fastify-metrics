@@ -29,12 +29,14 @@ let fastify = getFastify();
 
 fastify.after((err) => {
     if (err) throw err;
-    expectType<(time: [number, number]) => number>(fastify.hrtime2ms);
-    expectType<(time: [number, number]) => number>(fastify.hrtime2ms);
-    expectType<(time: [number, number]) => number>(fastify.hrtime2ms);
-    expectType<Client>(fastify.metricsClient);
-    expectType<Sampler | undefined>(fastify.doc);
-    expectType<string>(fastify.metricsRoutesPrefix);
+    expectType<(time: [number, number]) => number>(fastify.metrics.hrtime2us);
+    expectType<(time: [number, number]) => number>(fastify.metrics.hrtime2ms);
+    expectType<(time: [number, number]) => number>(fastify.metrics.hrtime2ms);
+    expectType<(time: [number, number]) => number>(fastify.metrics.hrtime2ms);
+    expectType<Client>(fastify.metrics.client);
+    expectType<Sampler | undefined>(fastify.metrics.sampler);
+    expectType<string>(fastify.metrics.fastifyPrefix);
+    expectType<string>(fastify.metrics.routesPrefix);
 
     fastify.get('/', async function (request, reply) {
         expectType<FastifyContextConfig>(request.context.config);
