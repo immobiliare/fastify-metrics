@@ -47,19 +47,13 @@ fastify.after((err) => {
         expectType<string | undefined>(request.metricsLabel);
         expectType<typeof Client.prototype.timing>(request.sendTimingMetric);
         expectType<typeof Client.prototype.counter>(request.sendCounterMetric);
-        expectType<
-            (name: string, value: number) => void
-        >(request.sendGaugeMetric);
-        expectType<
-            (name: string, value: number) => void
-        >(request.sendSetMetric);
+        expectType<typeof Client.prototype.gauge>(request.sendGaugeMetric);
+        expectType<typeof Client.prototype.set>(request.sendSetMetric);
 
         expectType<typeof Client.prototype.timing>(reply.sendTimingMetric);
         expectType<typeof Client.prototype.counter>(reply.sendCounterMetric);
-        expectType<
-            (name: string, value: number) => void
-        >(reply.sendGaugeMetric);
-        expectType<(name: string, value: number) => void>(reply.sendSetMetric);
+        expectType<typeof Client.prototype.gauge>(reply.sendGaugeMetric);
+        expectType<typeof Client.prototype.set>(reply.sendSetMetric);
     });
 });
 
