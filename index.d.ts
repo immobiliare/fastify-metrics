@@ -91,6 +91,7 @@ declare module 'fastify' {
         sendCounterMetric: typeof Client.prototype.counter;
         sendGaugeMetric: typeof Client.prototype.gauge;
         sendSetMetric: typeof Client.prototype.set;
+        getMetricLabel: () => string;
     }
 
     interface FastifyReply {
@@ -98,6 +99,7 @@ declare module 'fastify' {
         sendCounterMetric: typeof Client.prototype.counter;
         sendGaugeMetric: typeof Client.prototype.gauge;
         sendSetMetric: typeof Client.prototype.set;
+        getMetricLabel: () => string;
     }
 
     interface FastifyContextConfig {

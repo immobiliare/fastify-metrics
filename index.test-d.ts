@@ -50,11 +50,13 @@ fastify.after((err) => {
         expectType<typeof Client.prototype.counter>(request.sendCounterMetric);
         expectType<typeof Client.prototype.gauge>(request.sendGaugeMetric);
         expectType<typeof Client.prototype.set>(request.sendSetMetric);
+        expectType<() => string>(request.getMetricLabel);
 
         expectType<typeof Client.prototype.timing>(reply.sendTimingMetric);
         expectType<typeof Client.prototype.counter>(reply.sendCounterMetric);
         expectType<typeof Client.prototype.gauge>(reply.sendGaugeMetric);
         expectType<typeof Client.prototype.set>(reply.sendSetMetric);
+        expectType<() => string>(reply.getMetricLabel);
     });
 });
 
