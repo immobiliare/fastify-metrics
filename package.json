@@ -28,8 +28,10 @@
     "scripts": {
         "lint": "eslint --fix --ignore-path .gitignore .",
         "test": "tsd && tap",
-        "bench:base": "concurrently -k -s first \"node benchmarks/fixtures/base.js\" \"node -e 'setTimeout(() => {}, 1000)' && npx autocannon -c 100 -d 30 http://localhost:3000\"",
-        "bench": "concurrently -k -s first \"node benchmarks/fixtures/withMetrics.js\" \"node benchmarks/fixtures/statsd.js\" \"node -e 'setTimeout(() => {}, 1000)' && npx autocannon -c 100 -d 30 http://localhost:3001\"",
+        "bench": "npm run bench:base && npm run bench:static && npm run bench:dynamic",
+        "bench:base": "concurrently -k -s first \"node benchmarks/fixtures/base.js\" \"node -e 'setTimeout(() => {}, 1000)' && npx autocannon -T 'Base server' -c 100 -d 30 http://localhost:3000\"",
+        "bench:static": "concurrently -k -s first \"node benchmarks/fixtures/withStaticModeMetrics.js\" \"node benchmarks/fixtures/statsd.js\" \"node -e 'setTimeout(() => {}, 1000)' && npx autocannon -T 'Plugin in static mode' -c 100 -d 30 http://localhost:3001\"",
+        "bench:dynamic": "concurrently -k -s first \"node benchmarks/fixtures/withDynamicModeMetrics.js\" \"node benchmarks/fixtures/statsd.js\" \"node -e 'setTimeout(() => {}, 1000)' && npx autocannon -T 'Plugin in dynamic mode' -c 100 -d 30 http://localhost:3002\"",
         "toc": "markdown-toc -i README.md",
         "prepare": "node prepare.js || echo 'Skipping prepare script'"
     },
