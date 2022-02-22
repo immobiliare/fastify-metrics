@@ -313,6 +313,7 @@ tap.test('decorators', async (t) => {
         t.ok(server.hasRequestDecorator('sendCounterMetric'));
         t.ok(server.hasRequestDecorator('sendGaugeMetric'));
         t.ok(server.hasRequestDecorator('sendSetMetric'));
+        t.ok(server.hasRequestDecorator('getMetricLabel'));
 
         t.ok(server.hasReplyDecorator('sendTimingMetric'));
         t.ok(server.hasReplyDecorator('sendCounterMetric'));
@@ -322,6 +323,7 @@ tap.test('decorators', async (t) => {
         t.ok(server.hasReplyDecorator('sendCounterMetric'));
         t.ok(server.hasReplyDecorator('sendGaugeMetric'));
         t.ok(server.hasReplyDecorator('sendSetMetric'));
+        t.ok(server.hasRequestDecorator('getMetricLabel'));
     });
 });
 
@@ -403,7 +405,26 @@ tap.test('metrics collection', async (t) => {
 
     t.test('routes metrics', async (t) => {
         t.test('static mode', { only: true }, async (t) => {
-            async function setup(opts = {}) {
+            t.autoend(true);
+            async function setup(opts = {}, cb) {
+                if (!cb) {
+                    cb = (req, res) => {
+                        const fastifyPrefix = req.context.config.metrics
+                            .fastifyPrefix
+                            ? `${req.context.config.metrics.fastifyPrefix}.`
+                            : req.context.config.metrics.fastifyPrefix;
+                        const routePrefix = req.context.config.metrics
+                            .routesPrefix
+                            ? `${req.context.config.metrics.routesPrefix}.`
+                            : req.context.config.metrics.routesPrefix;
+                        t.equal(req.getMetricLabel(), res.getMetricLabel());
+                        t.equal(
+                            req.getMetricLabel(),
+                            `${fastifyPrefix}${routePrefix}${req.context.config.metrics.routeId}`
+                        );
+                    };
+                }
+
                 const defaults = {
                     host: `udp://127.0.0.1:${t.context.address.port}`,
                     collect: {
@@ -434,7 +455,8 @@ tap.test('metrics collection', async (t) => {
                 app.get(
                     '/id',
                     { config: { metrics: { routeId: 'myId-1' } } },
-                    async function () {
+                    async function (request, reply) {
+                        cb(request, reply);
                         return { ok: true };
                     }
                 );
@@ -443,6 +465,7 @@ tap.test('metrics collection', async (t) => {
                     reply.sendCounterMetric('count', 1);
                     reply.sendGaugeMetric('gauge', 1);
                     reply.sendSetMetric('set', 1);
+                    cb(request, reply);
                     return { ok: true };
                 });
                 app.get(
@@ -453,6 +476,7 @@ tap.test('metrics collection', async (t) => {
                         reply.sendCounterMetric('count', 1);
                         reply.sendGaugeMetric('gauge', 1);
                         reply.sendSetMetric('set', 1);
+                        cb(request, reply);
                         return { ok: true };
                     }
                 );
@@ -467,7 +491,8 @@ tap.test('metrics collection', async (t) => {
                         f.get(
                             '/id',
                             { config: { metrics: { routeId: 'myId-2' } } },
-                            async function () {
+                            async function (request, reply) {
+                                cb(request, reply);
                                 return { ok: true };
                             }
                         );
@@ -478,6 +503,7 @@ tap.test('metrics collection', async (t) => {
                                 reply.sendCounterMetric('count', 1);
                                 reply.sendGaugeMetric('gauge', 1);
                                 reply.sendSetMetric('set', 1);
+                                cb(request, reply);
                                 return { ok: true };
                             }
                         );
@@ -489,6 +515,7 @@ tap.test('metrics collection', async (t) => {
                                 reply.sendCounterMetric('count', 1);
                                 reply.sendGaugeMetric('gauge', 1);
                                 reply.sendSetMetric('set', 1);
+                                cb(request, reply);
                                 return { ok: true };
                             }
                         );
@@ -697,34 +724,42 @@ tap.test('metrics collection', async (t) => {
             });
 
             t.test('custom getLabel', async (t) => {
-                const app = await setup({
-                    namespace: 'static_routes_custom_getlabel_test',
-                    collect: {
-                        routes: {
-                            getLabel: function (options) {
-                                t.ok(typeof options.prefix === 'string');
-                                t.ok(options.config);
-                                t.ok(options.config.metrics);
-                                t.ok(
-                                    options.config.metrics.routesPrefix === ''
-                                );
-                                t.equal(
-                                    'string',
-                                    typeof options.config.metrics.routeId
-                                );
-                                t.equal(
-                                    'string',
-                                    typeof options.config.metrics.fastifyPrefix
-                                );
-                                t.ok(options.method);
-                                t.ok(options.url);
-                                t.ok(options.path);
-                                t.ok(options.handler);
-                                return 'customLabel';
+                const app = await setup(
+                    {
+                        namespace: 'static_routes_custom_getlabel_test',
+                        collect: {
+                            routes: {
+                                getLabel: function (options) {
+                                    t.ok(typeof options.prefix === 'string');
+                                    t.ok(options.config);
+                                    t.ok(options.config.metrics);
+                                    t.ok(
+                                        options.config.metrics.routesPrefix ===
+                                            ''
+                                    );
+                                    t.equal(
+                                        'string',
+                                        typeof options.config.metrics.routeId
+                                    );
+                                    t.equal(
+                                        'string',
+                                        typeof options.config.metrics
+                                            .fastifyPrefix
+                                    );
+                                    t.ok(options.method);
+                                    t.ok(options.url);
+                                    t.ok(options.path);
+                                    t.ok(options.handler);
+                                    return 'customLabel';
+                                },
                             },
                         },
                     },
-                });
+                    (req, res) => {
+                        t.equal(req.getMetricLabel(), 'customLabel');
+                        t.equal(res.getMetricLabel(), 'customLabel');
+                    }
+                );
                 t.teardown(async () => {
                     t.context.statsd.removeAllListeners('metric');
                     return app.close();
@@ -818,36 +853,43 @@ tap.test('metrics collection', async (t) => {
             });
 
             t.test('custom getLabel and custom prefix', async (t) => {
-                const app = await setup({
-                    namespace: 'static_routes_custom_prefix_getlabel_test',
-                    collect: {
-                        routes: {
-                            prefix: 'prefix',
-                            getLabel: function (options) {
-                                t.ok(typeof options.prefix === 'string');
-                                t.ok(options.config);
-                                t.ok(options.config.metrics);
-                                t.ok(
-                                    options.config.metrics.routesPrefix ===
-                                        'prefix'
-                                );
-                                t.equal(
-                                    'string',
-                                    typeof options.config.metrics.routeId
-                                );
-                                t.equal(
-                                    'string',
-                                    typeof options.config.metrics.fastifyPrefix
-                                );
-                                t.ok(options.method);
-                                t.ok(options.url);
-                                t.ok(options.path);
-                                t.ok(options.handler);
-                                return 'customLabel';
+                const app = await setup(
+                    {
+                        namespace: 'static_routes_custom_prefix_getlabel_test',
+                        collect: {
+                            routes: {
+                                prefix: 'prefix',
+                                getLabel: function (options) {
+                                    t.ok(typeof options.prefix === 'string');
+                                    t.ok(options.config);
+                                    t.ok(options.config.metrics);
+                                    t.ok(
+                                        options.config.metrics.routesPrefix ===
+                                            'prefix'
+                                    );
+                                    t.equal(
+                                        'string',
+                                        typeof options.config.metrics.routeId
+                                    );
+                                    t.equal(
+                                        'string',
+                                        typeof options.config.metrics
+                                            .fastifyPrefix
+                                    );
+                                    t.ok(options.method);
+                                    t.ok(options.url);
+                                    t.ok(options.path);
+                                    t.ok(options.handler);
+                                    return 'customLabel';
+                                },
                             },
                         },
                     },
-                });
+                    (req, res) => {
+                        t.equal(req.getMetricLabel(), 'customLabel');
+                        t.equal(res.getMetricLabel(), 'customLabel');
+                    }
+                );
                 t.teardown(async () => {
                     t.context.statsd.removeAllListeners('metric');
                     return app.close();
@@ -942,7 +984,25 @@ tap.test('metrics collection', async (t) => {
         });
 
         t.test('dynamic mode', { only: true }, async (t) => {
-            async function setup(opts = {}) {
+            t.autoend(true);
+            async function setup(opts = {}, cb) {
+                if (!cb) {
+                    cb = (req, res) => {
+                        const fastifyPrefix = req.context.config.metrics
+                            .fastifyPrefix
+                            ? `${req.context.config.metrics.fastifyPrefix}.`
+                            : req.context.config.metrics.fastifyPrefix;
+                        const routePrefix = req.context.config.metrics
+                            .routesPrefix
+                            ? `${req.context.config.metrics.routesPrefix}.`
+                            : req.context.config.metrics.routesPrefix;
+                        t.equal(req.getMetricLabel(), res.getMetricLabel());
+                        t.equal(
+                            req.getMetricLabel(),
+                            `${fastifyPrefix}${routePrefix}${req.context.config.metrics.routeId}`
+                        );
+                    };
+                }
                 const defaults = {
                     host: `udp://127.0.0.1:${t.context.address.port}`,
                     collect: {
@@ -974,7 +1034,8 @@ tap.test('metrics collection', async (t) => {
                     f.get(
                         '/id',
                         { config: { metrics: { routeId: 'myId-1' } } },
-                        async function () {
+                        async function (request, reply) {
+                            cb(request, reply);
                             return { ok: true };
                         }
                     );
@@ -983,6 +1044,7 @@ tap.test('metrics collection', async (t) => {
                         reply.sendCounterMetric('count', 1);
                         reply.sendGaugeMetric('gauge', 1);
                         reply.sendSetMetric('set', 1);
+                        cb(request, reply);
                         return { ok: true };
                     });
                     f.get(
@@ -993,6 +1055,7 @@ tap.test('metrics collection', async (t) => {
                             reply.sendCounterMetric('count', 1);
                             reply.sendGaugeMetric('gauge', 1);
                             reply.sendSetMetric('set', 1);
+                            cb(request, reply);
                             return { ok: true };
                         }
                     );
@@ -1002,13 +1065,15 @@ tap.test('metrics collection', async (t) => {
                 });
                 app.register(
                     async function (f) {
-                        f.get('/', async function () {
+                        f.get('/', async function (request, reply) {
+                            cb(request, reply);
                             return { ok: true };
                         });
                         f.get(
                             '/id',
                             { config: { metrics: { routeId: 'myId-2' } } },
-                            async function () {
+                            async function (request, reply) {
+                                cb(request, reply);
                                 return { ok: true };
                             }
                         );
@@ -1019,6 +1084,7 @@ tap.test('metrics collection', async (t) => {
                                 reply.sendCounterMetric('count', 1);
                                 reply.sendGaugeMetric('gauge', 1);
                                 reply.sendSetMetric('set', 1);
+                                cb(request, reply);
                                 return { ok: true };
                             }
                         );
@@ -1030,6 +1096,7 @@ tap.test('metrics collection', async (t) => {
                                 reply.sendCounterMetric('count', 1);
                                 reply.sendGaugeMetric('gauge', 1);
                                 reply.sendSetMetric('set', 1);
+                                cb(request, reply);
                                 return { ok: true };
                             }
                         );
@@ -1239,41 +1306,48 @@ tap.test('metrics collection', async (t) => {
             });
 
             t.test('custom getLabel', async (t) => {
-                const app = await setup({
-                    namespace: 'dynamic_routes_custom_getlabel_test',
-                    collect: {
-                        routes: {
-                            getLabel: function (request, reply) {
-                                t.ok(typeof this.prefix === 'string');
-                                t.ok(
-                                    typeof this.metrics.routesPrefix ===
-                                        'string'
-                                );
-                                for (const r of [request, reply]) {
+                const app = await setup(
+                    {
+                        namespace: 'dynamic_routes_custom_getlabel_test',
+                        collect: {
+                            routes: {
+                                getLabel: function (request, reply) {
+                                    t.ok(typeof this.prefix === 'string');
                                     t.ok(
-                                        typeof r.context.config.metrics ===
-                                            'object'
+                                        typeof this.metrics.routesPrefix ===
+                                            'string'
                                     );
-                                    t.equal(
-                                        'string',
-                                        typeof r.context.config.metrics.routeId
-                                    );
-                                    t.equal(
-                                        'string',
-                                        typeof r.context.config.metrics
-                                            .fastifyPrefix
-                                    );
-                                    t.equal(
-                                        'string',
-                                        typeof r.context.config.metrics
-                                            .routesPrefix
-                                    );
-                                }
-                                return 'customLabel';
+                                    for (const r of [request, reply]) {
+                                        t.ok(
+                                            typeof r.context.config.metrics ===
+                                                'object'
+                                        );
+                                        t.equal(
+                                            'string',
+                                            typeof r.context.config.metrics
+                                                .routeId
+                                        );
+                                        t.equal(
+                                            'string',
+                                            typeof r.context.config.metrics
+                                                .fastifyPrefix
+                                        );
+                                        t.equal(
+                                            'string',
+                                            typeof r.context.config.metrics
+                                                .routesPrefix
+                                        );
+                                    }
+                                    return 'customLabel';
+                                },
                             },
                         },
                     },
-                });
+                    (req, res) => {
+                        t.equal(req.getMetricLabel(), 'customLabel');
+                        t.equal(res.getMetricLabel(), 'customLabel');
+                    }
+                );
                 t.teardown(async () => {
                     t.context.statsd.removeAllListeners('metric');
                     return app.close();
@@ -1367,39 +1441,48 @@ tap.test('metrics collection', async (t) => {
             });
 
             t.test('custom getLabel and custom prefix', async (t) => {
-                const app = await setup({
-                    namespace: 'dynamic_routes_custom_prefix_getlabel_test',
-                    collect: {
-                        routes: {
-                            prefix: 'prefix',
-                            getLabel: function (request, reply) {
-                                t.ok(typeof this.prefix === 'string');
-                                t.ok(this.metrics.routesPrefix === 'prefix');
-                                for (const r of [request, reply]) {
+                const app = await setup(
+                    {
+                        namespace: 'dynamic_routes_custom_prefix_getlabel_test',
+                        collect: {
+                            routes: {
+                                prefix: 'prefix',
+                                getLabel: function (request, reply) {
+                                    t.ok(typeof this.prefix === 'string');
                                     t.ok(
-                                        typeof r.context.config.metrics ===
-                                            'object'
+                                        this.metrics.routesPrefix === 'prefix'
                                     );
-                                    t.equal(
-                                        'string',
-                                        typeof r.context.config.metrics.routeId
-                                    );
-                                    t.equal(
-                                        'string',
-                                        typeof r.context.config.metrics
-                                            .fastifyPrefix
-                                    );
-                                    t.equal(
-                                        'string',
-                                        typeof r.context.config.metrics
-                                            .routesPrefix
-                                    );
-                                }
-                                return 'customLabel';
+                                    for (const r of [request, reply]) {
+                                        t.ok(
+                                            typeof r.context.config.metrics ===
+                                                'object'
+                                        );
+                                        t.equal(
+                                            'string',
+                                            typeof r.context.config.metrics
+                                                .routeId
+                                        );
+                                        t.equal(
+                                            'string',
+                                            typeof r.context.config.metrics
+                                                .fastifyPrefix
+                                        );
+                                        t.equal(
+                                            'string',
+                                            typeof r.context.config.metrics
+                                                .routesPrefix
+                                        );
+                                    }
+                                    return 'customLabel';
+                                },
                             },
                         },
                     },
-                });
+                    (req, res) => {
+                        t.equal(req.getMetricLabel(), 'customLabel');
+                        t.equal(res.getMetricLabel(), 'customLabel');
+                    }
+                );
                 t.teardown(async () => {
                     t.context.statsd.removeAllListeners('metric');
                     return app.close();

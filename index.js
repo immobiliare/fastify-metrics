@@ -262,6 +262,12 @@ module.exports = fp(
                 ? staticMode.bindSetMetric(stats)
                 : dynamicMode.bindSetMetric(stats)
         );
+        fastify.decorateRequest(
+            'getMetricLabel',
+            mode === 'static'
+                ? staticMode.getRouteLabel
+                : dynamicMode.getRouteLabel
+        );
 
         fastify.decorateReply(
             'sendTimingMetric',
@@ -286,6 +292,12 @@ module.exports = fp(
             mode === 'static'
                 ? staticMode.bindSetMetric(stats)
                 : dynamicMode.bindSetMetric(stats)
+        );
+        fastify.decorateReply(
+            'getMetricLabel',
+            mode === 'static'
+                ? staticMode.getRouteLabel
+                : dynamicMode.getRouteLabel
         );
 
         if (metricsConfig.routes.hits) {
