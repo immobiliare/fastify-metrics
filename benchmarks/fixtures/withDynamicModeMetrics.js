@@ -2,13 +2,22 @@
 
 const fastify = require('fastify');
 
-const service = fastify();
+const service = fastify({
+    logger: {
+        level: 'error',
+    },
+});
 
-service.register(require('../../'), {
+service.register(require('../..'), {
     host: 'udp://127.0.0.1:20000',
     namespace: 'ns',
     sampleInterval: 1000,
     bufferSize: 1024,
+    collect: {
+        routes: {
+            mode: 'dynamic',
+        },
+    },
 });
 
 service.get(
@@ -34,7 +43,7 @@ service.get(
     }
 );
 
-service.listen(3001, (error) => {
+service.listen(3002, (error) => {
     if (error) {
         service.log.error(error);
         process.exit(1);
