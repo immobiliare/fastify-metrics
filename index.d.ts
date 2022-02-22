@@ -54,6 +54,20 @@ type StaticMode = {
 
 type RoutesOptions = StaticMode | DynamicMode;
 
+type MetricsInstanceDecorator = {
+    namespace: string;
+    /** Normalized fastify prefix */
+    fastifyPrefix: string;
+    /** Normalized routes prefix */
+    routesPrefix: string;
+    client: Client;
+    sampler?: Sampler;
+    hrtime2us: (time: [number, number]) => number;
+    hrtime2ns: (time: [number, number]) => number;
+    hrtime2ms: (time: [number, number]) => number;
+    hrtime2s: (time: [number, number]) => number;
+};
+
 export interface MetricsPluginOptions extends Options {
     sampleInterval?: number;
     collect?: {
@@ -69,12 +83,7 @@ export const MetricsPluginAsync: FastifyPluginAsync<MetricsPluginOptions>;
 export default MetricsPluginCallback;
 declare module 'fastify' {
     interface FastifyInstance {
-        metricsRoutesPrefix: string;
-        metricsClient: Client;
-        doc?: Sampler;
-        hrtime2ns: (time: [number, number]) => number;
-        hrtime2ms: (time: [number, number]) => number;
-        hrtime2s: (time: [number, number]) => number;
+        metrics: MetricsInstanceDecorator;
     }
 
     interface FastifyRequest {
@@ -95,9 +104,9 @@ declare module 'fastify' {
         metrics: {
             /** The id for this route that will be used for the label */
             routeId: string;
-            /** The fastify prefix for this route */
+            /** Normalized fastify prefix for this route */
             fastifyPrefix: string;
-            /** The prefix the pugin should add for the registered routes */
+            /** Normalized prefix of the routes */
             routesPrefix: string;
         };
     }

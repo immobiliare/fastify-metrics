@@ -1,11 +1,12 @@
 'use strict';
 
 const tap = require('tap');
+const fastify = require('fastify');
+const { Sampler } = require('@dnlup/doc');
 const sinon = require('sinon');
 const { StatsdMock } = require('./helpers/statsd');
 const StatsdMockTCP = require('./helpers/statsdTCP');
 const plugin = require('../');
-const { default: fastify } = require('fastify');
 
 const PLUGIN_METHODS = [
     'counter',
@@ -207,7 +208,7 @@ tap.test('configuration validation', async (t) => {
                     },
                 },
             });
-            t.equal(server.metricsRoutesPrefix, i.expected);
+            t.equal(server.metrics.routesPrefix, i.expected);
         }
     });
 
@@ -260,17 +261,21 @@ tap.test('configuration validation', async (t) => {
 });
 
 tap.test('decorators', async (t) => {
-    t.test('default decorators', async (t) => {
+    t.test('default metrcs decorator', async (t) => {
         const server = await setup({
             host: 'udp://127.0.0.1:12000',
         });
-        t.ok(server.hasDecorator('metricsClient'));
-        t.ok(server.hasDecorator('doc'));
-        t.ok(server.hasDecorator('hrtime2ns'));
-        t.ok(server.hasDecorator('hrtime2ms'));
-        t.ok(server.hasDecorator('hrtime2s'));
+        t.ok(server.hasDecorator('metrics'));
+        t.ok(server.metrics.sampler instanceof Sampler);
+        t.equal('string', typeof server.metrics.namespace);
+        t.equal('string', typeof server.metrics.fastifyPrefix);
+        t.equal('string', typeof server.metrics.routesPrefix);
+        t.equal('function', typeof server.metrics.hrtime2us);
+        t.equal('function', typeof server.metrics.hrtime2ns);
+        t.equal('function', typeof server.metrics.hrtime2ms);
+        t.equal('function', typeof server.metrics.hrtime2s);
         for (const method of PLUGIN_METHODS) {
-            t.equal('function', typeof server.metricsClient[method]);
+            t.equal('function', typeof server.metrics.client[method]);
         }
     });
 
@@ -281,13 +286,17 @@ tap.test('decorators', async (t) => {
                 health: false,
             },
         });
-        t.ok(server.hasDecorator('metricsClient'));
-        t.notOk(server.hasDecorator('doc'));
-        t.ok(server.hasDecorator('hrtime2ns'));
-        t.ok(server.hasDecorator('hrtime2ms'));
-        t.ok(server.hasDecorator('hrtime2s'));
+        t.ok(server.hasDecorator('metrics'));
+        t.notOk(server.metrics.sampler instanceof Sampler);
+        t.equal('string', typeof server.metrics.namespace);
+        t.equal('string', typeof server.metrics.fastifyPrefix);
+        t.equal('string', typeof server.metrics.routesPrefix);
+        t.equal('function', typeof server.metrics.hrtime2us);
+        t.equal('function', typeof server.metrics.hrtime2ns);
+        t.equal('function', typeof server.metrics.hrtime2ms);
+        t.equal('function', typeof server.metrics.hrtime2s);
         for (const method of PLUGIN_METHODS) {
-            t.equal('function', typeof server.metricsClient[method]);
+            t.equal('function', typeof server.metrics.client[method]);
         }
     });
 
@@ -335,7 +344,7 @@ tap.test('hooks', async (t) => {
         });
         t.teardown(() => server.close());
         const spy = sinon.spy(server.log, 'error');
-        server.metricsClient.socket.onError(new Error('test'));
+        server.metrics.client.socket.onError(new Error('test'));
         t.equal('test', spy.getCall(0).firstArg.message);
     });
 });
@@ -699,6 +708,14 @@ tap.test('metrics collection', async (t) => {
                                 t.ok(
                                     options.config.metrics.routesPrefix === ''
                                 );
+                                t.equal(
+                                    'string',
+                                    typeof options.config.metrics.routeId
+                                );
+                                t.equal(
+                                    'string',
+                                    typeof options.config.metrics.fastifyPrefix
+                                );
                                 t.ok(options.method);
                                 t.ok(options.url);
                                 t.ok(options.path);
@@ -813,6 +830,14 @@ tap.test('metrics collection', async (t) => {
                                 t.ok(
                                     options.config.metrics.routesPrefix ===
                                         'prefix'
+                                );
+                                t.equal(
+                                    'string',
+                                    typeof options.config.metrics.routeId
+                                );
+                                t.equal(
+                                    'string',
+                                    typeof options.config.metrics.fastifyPrefix
                                 );
                                 t.ok(options.method);
                                 t.ok(options.url);
@@ -1221,12 +1246,27 @@ tap.test('metrics collection', async (t) => {
                             getLabel: function (request, reply) {
                                 t.ok(typeof this.prefix === 'string');
                                 t.ok(
-                                    typeof this.metricsRoutesPrefix === 'string'
+                                    typeof this.metrics.routesPrefix ===
+                                        'string'
                                 );
-                                if (reply.context.config.metrics) {
+                                for (const r of [request, reply]) {
                                     t.ok(
-                                        typeof reply.context.config.metrics ===
+                                        typeof r.context.config.metrics ===
                                             'object'
+                                    );
+                                    t.equal(
+                                        'string',
+                                        typeof r.context.config.metrics.routeId
+                                    );
+                                    t.equal(
+                                        'string',
+                                        typeof r.context.config.metrics
+                                            .fastifyPrefix
+                                    );
+                                    t.equal(
+                                        'string',
+                                        typeof r.context.config.metrics
+                                            .routesPrefix
                                     );
                                 }
                                 return 'customLabel';
@@ -1334,11 +1374,25 @@ tap.test('metrics collection', async (t) => {
                             prefix: 'prefix',
                             getLabel: function (request, reply) {
                                 t.ok(typeof this.prefix === 'string');
-                                t.ok(this.metricsRoutesPrefix === 'prefix');
-                                if (reply.context.config.metrics) {
+                                t.ok(this.metrics.routesPrefix === 'prefix');
+                                for (const r of [request, reply]) {
                                     t.ok(
-                                        typeof reply.context.config.metrics ===
+                                        typeof r.context.config.metrics ===
                                             'object'
+                                    );
+                                    t.equal(
+                                        'string',
+                                        typeof r.context.config.metrics.routeId
+                                    );
+                                    t.equal(
+                                        'string',
+                                        typeof r.context.config.metrics
+                                            .fastifyPrefix
+                                    );
+                                    t.equal(
+                                        'string',
+                                        typeof r.context.config.metrics
+                                            .routesPrefix
                                     );
                                 }
                                 return 'customLabel';
@@ -1722,7 +1776,7 @@ tap.test('metrics collection', async (t) => {
                     /disabling_all_metrics_test\.process\.cpu:\d+(\.\d+)?\|g/,
                 ];
                 for (const metric of metrics) {
-                    server.metricsClient.timing('some_time', metric);
+                    server.metrics.client.timing('some_time', metric);
                 }
                 let cursor = 0;
                 t.context.statsd.on('metric', (buffer) => {
