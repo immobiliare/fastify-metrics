@@ -7,7 +7,7 @@ import {
     RouteOptions,
 } from 'fastify';
 
-import Client, { Options } from '@immobiliarelabs/dats';
+import Client, { Options as ClientOptions } from '@immobiliarelabs/dats';
 import { Sampler } from '@dnlup/doc';
 
 type CustomClient = Pick<
@@ -54,6 +54,13 @@ type StaticMode = {
 
 type RoutesOptions = StaticMode | DynamicMode;
 
+type SamplerOptions = {
+    sampleInterval?: number;
+    eventLoopOptions?: {
+        resolution: number;
+    };
+};
+
 type MetricsInstanceDecorator = {
     namespace: string;
     /** Normalized fastify prefix */
@@ -68,13 +75,10 @@ type MetricsInstanceDecorator = {
     hrtime2s: (time: [number, number]) => number;
 };
 
-export interface MetricsPluginOptions extends Options {
-    sampleInterval?: number;
-    collect?: {
-        routes?: RoutesOptions;
-        health?: boolean;
-    };
-    customDatsClient?: CustomClient;
+export interface MetricsPluginOptions {
+    client?: ClientOptions | CustomClient;
+    routes?: RoutesOptions;
+    health?: boolean | SamplerOptions;
 }
 
 export const MetricsPluginCallback: FastifyPluginCallback<MetricsPluginOptions>;

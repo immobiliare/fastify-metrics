@@ -62,73 +62,57 @@ fastify.after((err) => {
 
 expectError(
     getFastify({
-        collect: {
-            routes: {
-                mode: 'nonexistent',
-            },
+        routes: {
+            mode: 'nonexistent',
         },
     })
 );
 
 expectError(
     getFastify({
-        collect: {
-            routes: {
-                mode: 'static',
-                getLabel: () => {},
-            },
+        routes: {
+            mode: 'static',
+            getLabel: () => {},
         },
     })
 );
 
 expectError(
     getFastify({
-        collect: {
-            routes: {
-                mode: 'static',
-                getLabel: () => {},
-            },
+        routes: {
+            mode: 'static',
+            getLabel: () => {},
         },
     })
 );
 
 expectType(
     getFastify({
-        collect: {
-            routes: {
-                mode: 'static',
-                getLabel: (options) =>
-                    `${options.config.metrics.fastifyPrefix}.${options.config.metrics.routesPrefix}.${options.config.metrics.routeId}`,
-            },
+        routes: {
+            mode: 'static',
+            getLabel: (options) =>
+                `${options.config.metrics.fastifyPrefix}.${options.config.metrics.routesPrefix}.${options.config.metrics.routeId}`,
         },
     })
 );
 
 expectType(
     getFastify({
-        collect: {
-            routes: {
-                mode: 'dynamic',
-                getLabel: function (request, reply) {
-                    expectType<FastifyInstance>(this);
-                    expectType<FastifyRequest>(request);
-                    expectType<string>(
-                        request.context.config.metrics.fastifyPrefix
-                    );
-                    expectType<string>(
-                        request.context.config.metrics.routesPrefix
-                    );
-                    expectType<string>(request.context.config.metrics.routeId);
-                    expectType<FastifyReply>(reply);
-                    expectType<string>(
-                        reply.context.config.metrics.fastifyPrefix
-                    );
-                    expectType<string>(
-                        reply.context.config.metrics.routesPrefix
-                    );
-                    expectType<string>(reply.context.config.metrics.routeId);
-                    return 'label';
-                },
+        routes: {
+            mode: 'dynamic',
+            getLabel: function (request, reply) {
+                expectType<FastifyInstance>(this);
+                expectType<FastifyRequest>(request);
+                expectType<string>(
+                    request.context.config.metrics.fastifyPrefix
+                );
+                expectType<string>(request.context.config.metrics.routesPrefix);
+                expectType<string>(request.context.config.metrics.routeId);
+                expectType<FastifyReply>(reply);
+                expectType<string>(reply.context.config.metrics.fastifyPrefix);
+                expectType<string>(reply.context.config.metrics.routesPrefix);
+                expectType<string>(reply.context.config.metrics.routeId);
+                return 'label';
             },
         },
     })
@@ -136,7 +120,7 @@ expectType(
 
 expectError(
     getFastify({
-        customDatsClient: {
+        client: {
             counter: () => {},
             set: () => {},
             timing: () => {},
@@ -147,12 +131,12 @@ expectError(
     })
 );
 
-const customDatsClient = new Client({ host: 'localhost' });
+const client = new Client({ host: 'localhost' });
 
-expectType(getFastify({ customDatsClient }));
+expectType(getFastify({ client }));
 expectType(
     getFastify({
-        customDatsClient: {
+        client: {
             counter: () => {},
             set: () => {},
             timing: () => {},

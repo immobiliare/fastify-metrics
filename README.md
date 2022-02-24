@@ -39,6 +39,7 @@ It supports Fastify versions `>=3.0.0`.
             -   [`metrics.hrtime2ms`](#metricshrtime2ms)
             -   [`metrics.hrtime2s`](#metricshrtime2s)
     -   [Request and Reply decorators](#request-and-reply-decorators)
+        -   [`getMetricLabel()`](#getmetriclabel)
         -   [`sendTimingMetric(name[, value])`](#sendtimingmetricname-value)
         -   [`sendCounterMetric(name[, value])`](#sendcountermetricname-value)
         -   [`sendGaugeMetric(name, value)`](#sendgaugemetricname-value)
@@ -197,6 +198,10 @@ See [hrtime-utils](https://github.com/dnlup/hrtime-utils#hrtime2stime).
 
 ### Request and Reply decorators
 
+#### `getMetricLabel()`
+
+-   **Returns** <`string`>: the computed metric label of the route.
+
 #### `sendTimingMetric(name[, value])`
 
 -   name <`string`>: the name of the metric
@@ -253,24 +258,17 @@ This module exports a [plugin registration function](https://github.com/fastify/
 
 > The plugin is configured with an object with the following properties
 
--   `host` <`string`> [statsd](https://github.com/statsd/statsd) host, see [Dats](https://github.com/immobiliare/dats#new-clientoptions).
--   `namespace` <`string`> Metrics namespace, see [Dats](https://github.com/immobiliare/dats#new-clientoptions).
--   `bufferSize` <`number`> Metrics buffer size, see [Dats](https://github.com/immobiliare/dats#new-clientoptions).
--   `bufferFlushTimeout` <`number`> Metrics buffer flush timeout. See [Dats](https://github.com/immobiliare/dats#new-clientoptions).
--   `sampleInterval` <`number`> Optional. The sample interval in `ms` used to gather process stats. It defaults to `1000`.
--   `onError` <`Function`> Optional. This function to handle possible Dats errors (it takes the error as the only parameter). See [Dats](https://github.com/immobiliare/dats#new-clientoptions). Default: `(err) => log(err)`
--   `udpDnsCache` <`boolean`> Optional. Activate udpDnsCache. See [Dats](https://github.com/immobiliare/dats#new-clientoptions). Default `true`.
--   `udpDnsCacheTTL` <`number`> Optional. See [Dats](https://github.com/immobiliare/dats#new-clientoptions). DNS cache Time to live of an entry in seconds. Default `120`.
--   `customDatsClient` [<`Client`>](https://github.com/immobiliare/dats#client). Optional. A custom Dats client. If set, all the `fastify-metrics` parameters of Dats will be ignored.
--   `collect`: Object. Optional. Which metrics the plugin should track.
-    -   `routes` <`Object`>: routes metrics configuration
-        -   `mode` <`'static'`|`'dynamic'`> The strategy to generate the route metric label.
-        -   `prefix` <`string`> The prefix to use for the routes labels (`<METRICS_NAMESPACE>.<computedPrefix>.<routeId>.*`). It defaults to `''` (no prefix).
-        -   `getLabel` <`Function`> A custom function to generate the route label. It has a different signature depending on the mode. See []().
-        -   `timings`: Boolean. Collect response timings (`<METRICS_NAMESPACE>.<computedPrefix>.<routeId>`). Default: `true`.
-        -   `hits`: Boolean. Collect requests count (`<METRICS_NAMESPACE>.<computedPrefix>.requests.<routeId>`). Default: `true`.
-        -   `errors`: Boolean. Collect errors count (`<METRICS_NAMESPACE>.<computedPrefix>.errors.<routeId>.<statusCode>`). Default: `true`.
-    -   `health`: Boolean. Collect process health data (`<METRICS_NAMESPACE>.process.*`). Default: `true`.
+-   `client` <`Object`|`Client`> The statsd client [configuration](https://github.com/immobiliare/dats#new-clientoptions) object or a [`Client`](https://github.com/immobiliare/dats) instance. When using the options object, a default `onError` function is used to log with level `error` the event with the app logger.
+-   `routes` <`Object`> Routes metrics configuration
+    -   `mode` <`'static'`|`'dynamic'`> The [strategy](#routes-labels-generation-modes) to generate the route metric label.
+    -   `prefix` <`string`> The prefix to use for the routes labels (`<METRICS_NAMESPACE>.<computedPrefix>.<routeId>.*`). It defaults to `''` (no prefix).
+    -   `getLabel` <`Function`> A custom function to generate the route label. It has a different signature depending on the [mode](#routes-labels-generation-modes).
+    -   `timings` <`boolean`> Collect response timings (`<METRICS_NAMESPACE>.<computedPrefix>.<routeId>`). Default: `true`.
+    -   `hits` <`boolean`> Collect requests count (`<METRICS_NAMESPACE>.<computedPrefix>.requests.<routeId>`). Default: `true`.
+    -   `errors` <`boolean`> Collect errors count (`<METRICS_NAMESPACE>.<computedPrefix>.errors.<routeId>.<statusCode>`). Default: `true`.
+-   `health` <`boolean`|`Object`> Flag to enable/disable the collection of the process health data(`<METRICS_NAMESPACE>.process.*`) or an object to configure a subset of the health metrics provided by the [sampler](https://github.com/dnlup/doc#new-docsampleroptions). Default: `true`.
+    -   `sampleInterval` <`number`> The number of milliseconds of the interval to get the metrics sample.
+    -   `eventLoopOptions` <`Object`> The options object used to configure the core [`monitorEventLoopDelay`](https://nodejs.org/docs/latest-v16.x/api/perf_hooks.html#perf_hooksmonitoreventloopdelayoptions).
 
 #### Routes labels generation modes
 
