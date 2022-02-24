@@ -16,17 +16,10 @@ const {
     getRouteId,
     normalizeFastifyPrefix,
     normalizeRoutePrefix,
+    STATSD_METHODS,
+    isCustomClient,
 } = require('./lib/util');
 const { kMetricsLabel } = require('./lib/symbols');
-
-const STATSD_METHODS = [
-    'counter',
-    'timing',
-    'gauge',
-    'set',
-    'close',
-    'connect',
-];
 
 function clientMock() {
     const mock = {
@@ -59,7 +52,7 @@ function sendHealthData(
 /**
  * Default configuration for metrics collected.
  */
-const DEFAULT_COLLECT_OPTIONS = {
+const DEFAULT_CONFIG_OPTIONS = {
     routes: {
         mode: 'static',
         prefix: '',
@@ -85,26 +78,12 @@ const DEFAULT_COLLECT_OPTIONS = {
 };
 
 module.exports = fp(
-    async function (
-        fastify,
-        {
-            host,
-            namespace,
-            bufferSize,
-            bufferFlushTimeout,
-            sampleInterval,
-            udpDnsCache,
-            udpDnsCacheTTL,
-            collect = {},
-            customDatsClient = null,
-            onError = (error) => void fastify.log.error(error),
-        }
-    ) {
+    async function (fastify, opts) {
+        const { client = {}, routes, ...others } = opts;
         // TODO: allow to pass routes: false to disable the routes alltoghether.
-        const { routes, ...others } = collect;
         const { routes: defaultRoutes, ...defaultOthers } =
-            DEFAULT_COLLECT_OPTIONS;
-        const metricsConfig = {
+            DEFAULT_CONFIG_OPTIONS;
+        const config = {
             routes: {
                 ...defaultRoutes,
                 ...routes,
@@ -114,19 +93,24 @@ module.exports = fp(
         };
 
         for (const key of ['timing', 'hits', 'errors']) {
-            if (typeof metricsConfig.routes[key] !== 'boolean') {
+            if (typeof config.routes[key] !== 'boolean') {
                 throw new Error(`"${key}" must be a boolean.`);
             }
         }
-        if (typeof metricsConfig.health !== 'boolean') {
-            throw new Error(`"health" must be a boolean.`);
+        if (
+            (typeof config.health !== 'boolean' &&
+                typeof config.health !== 'object') ||
+            Array.isArray(config.health) ||
+            config.health === null
+        ) {
+            throw new Error(`"health" must be a boolean or an object.`);
         }
-        const { prefix, mode } = metricsConfig.routes;
+        const { prefix, mode } = config.routes;
         if (typeof prefix !== 'string') {
             throw new Error('"prefix" must be a string.');
         }
         if (prefix.startsWith('.') || prefix.endsWith('.')) {
-            metricsConfig.routes.prefix = prefix.replace(/(^\.+|\.+$)/g, '');
+            config.routes.prefix = prefix.replace(/(^\.+|\.+$)/g, '');
         }
         if (mode !== 'static' && mode !== 'dynamic') {
             throw new Error(
@@ -135,32 +119,30 @@ module.exports = fp(
         }
 
         let stats;
-
-        if (customDatsClient) {
+        // If client is a custom client or is not an options object
+        if (client instanceof Client || isCustomClient(client)) {
             for (const method of STATSD_METHODS) {
-                const fn = customDatsClient[method];
+                const fn = client[method];
                 if (!fn || typeof fn !== 'function')
                     throw new Error(
-                        `customDatsClient does not implement ${method} method.`
+                        `client does not implement ${method} method.`
                     );
             }
-            stats = customDatsClient;
+            stats = client;
         } else {
-            stats = host
+            const onError = (error) => void fastify.log.error(error);
+            stats = client.host
                 ? new Client({
-                      host,
-                      namespace,
-                      bufferSize,
-                      bufferFlushTimeout,
-                      udpDnsCache,
-                      udpDnsCacheTTL,
-                      onError: onError,
+                      onError,
+                      ...client,
                   })
                 : clientMock();
         }
+
         let sampler;
-        if (metricsConfig.health) {
-            sampler = doc({ sampleInterval });
+        if (config.health) {
+            sampler =
+                typeof config.health === 'object' ? doc(config.health) : doc();
             const onSample = function () {
                 sendHealthData(
                     {
@@ -179,8 +161,9 @@ module.exports = fp(
         await stats.connect();
 
         const metrics = Object.freeze({
-            namespace: typeof namespace === 'string' ? namespace : '',
-            routesPrefix: normalizeRoutePrefix(metricsConfig.routes.prefix),
+            namespace:
+                typeof client.namespace === 'string' ? client.namespace : '',
+            routesPrefix: normalizeRoutePrefix(config.routes.prefix),
             fastifyPrefix: normalizeFastifyPrefix(fastify.prefix),
             client: stats,
             sampler,
@@ -192,9 +175,9 @@ module.exports = fp(
         fastify.decorate('metrics', metrics);
 
         if (
-            metricsConfig.routes.timing ||
-            metricsConfig.routes.errors ||
-            metricsConfig.routes.hits
+            config.routes.timing ||
+            config.routes.errors ||
+            config.routes.hits
         ) {
             fastify.addHook('onRoute', (options) => {
                 // TODO: check for duplicates when registering routes
@@ -208,8 +191,7 @@ module.exports = fp(
                 options.config.metrics[kMetricsLabel] = '';
             });
             if (mode === 'dynamic') {
-                let getLabel =
-                    metricsConfig.routes.getLabel || dynamicMode.getLabel;
+                let getLabel = config.routes.getLabel || dynamicMode.getLabel;
                 if (typeof getLabel !== 'function') {
                     throw new Error('"getLabel" must be a function.');
                 }
@@ -223,8 +205,7 @@ module.exports = fp(
                     next();
                 });
             } else {
-                const getLabel =
-                    metricsConfig.routes.getLabel || staticMode.getLabel;
+                const getLabel = config.routes.getLabel || staticMode.getLabel;
                 if (typeof getLabel !== 'function') {
                     throw new Error('"getLabel" must be a function.');
                 }
@@ -299,13 +280,13 @@ module.exports = fp(
                 : dynamicMode.getRouteLabel
         );
 
-        if (metricsConfig.routes.hits) {
+        if (config.routes.hits) {
             fastify.addHook('onRequest', hooks.onRequest);
         }
-        if (metricsConfig.routes.timing) {
+        if (config.routes.timing) {
             fastify.addHook('onResponse', hooks.onResponse);
         }
-        if (metricsConfig.routes.errors) {
+        if (config.routes.errors) {
             fastify.addHook('onError', hooks.onError);
         }
     },

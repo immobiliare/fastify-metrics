@@ -7,15 +7,7 @@ const sinon = require('sinon');
 const { StatsdMock } = require('./helpers/statsd');
 const StatsdMockTCP = require('./helpers/statsdTCP');
 const plugin = require('../');
-
-const PLUGIN_METHODS = [
-    'counter',
-    'timing',
-    'gauge',
-    'set',
-    'close',
-    'connect',
-];
+const { STATSD_METHODS } = require('../lib/util');
 
 async function setup(opts) {
     const app = fastify();
@@ -51,13 +43,17 @@ tap.test('configuration validation', async (t) => {
             },
             {
                 value: {
-                    host: 'udp://172.0.0.100:123',
-                    namespace: 'ns',
+                    client: {
+                        host: 'udp://172.0.0.100:123',
+                        namespace: 'ns',
+                    },
                 },
             },
             {
                 value: {
-                    sampleInterval: 2000,
+                    health: {
+                        sampleInterval: 2000,
+                    },
                 },
             },
         ];
@@ -70,58 +66,46 @@ tap.test('configuration validation', async (t) => {
         const configs = [
             {
                 value: {
-                    collect: {
-                        routes: {
-                            timing: 'true',
-                        },
+                    routes: {
+                        timing: 'true',
                     },
                 },
                 message: '"timing" must be a boolean.',
             },
             {
                 value: {
-                    collect: {
-                        routes: {
-                            hits: 1,
-                        },
+                    routes: {
+                        hits: 1,
                     },
                 },
                 message: '"hits" must be a boolean.',
             },
             {
                 value: {
-                    collect: {
-                        routes: {
-                            errors: {},
-                        },
+                    routes: {
+                        errors: {},
                     },
                 },
                 message: '"errors" must be a boolean.',
             },
             {
                 value: {
-                    collect: {
-                        health: [],
-                    },
+                    health: [],
                 },
-                message: '"health" must be a boolean.',
+                message: '"health" must be a boolean or an object.',
             },
             {
                 value: {
-                    collect: {
-                        routes: {
-                            prefix: null,
-                        },
+                    routes: {
+                        prefix: null,
                     },
                 },
                 message: '"prefix" must be a string.',
             },
             {
                 value: {
-                    collect: {
-                        routes: {
-                            mode: 'some',
-                        },
+                    routes: {
+                        mode: 'some',
                     },
                 },
                 message:
@@ -129,10 +113,8 @@ tap.test('configuration validation', async (t) => {
             },
             {
                 value: {
-                    collect: {
-                        routes: {
-                            mode: null,
-                        },
+                    routes: {
+                        mode: null,
                     },
                 },
                 message:
@@ -140,21 +122,17 @@ tap.test('configuration validation', async (t) => {
             },
             {
                 value: {
-                    collect: {
-                        routes: {
-                            getLabel: 123,
-                        },
+                    routes: {
+                        getLabel: 123,
                     },
                 },
                 message: '"getLabel" must be a function.',
             },
             {
                 value: {
-                    collect: {
-                        routes: {
-                            mode: 'dynamic',
-                            getLabel: 123,
-                        },
+                    routes: {
+                        mode: 'dynamic',
+                        getLabel: 123,
                     },
                 },
                 message: '"getLabel" must be a function.',
@@ -202,10 +180,8 @@ tap.test('configuration validation', async (t) => {
 
         for (const i of list) {
             const server = await setup({
-                collect: {
-                    routes: {
-                        prefix: i.prefix,
-                    },
+                routes: {
+                    prefix: i.prefix,
                 },
             });
             t.equal(server.metrics.routesPrefix, i.expected);
@@ -223,7 +199,7 @@ tap.test('configuration validation', async (t) => {
             close: stub,
             connect: stub,
         };
-        const server = await setup({ customDatsClient: datsMock });
+        const server = await setup({ client: datsMock });
 
         await server.inject({
             method: 'GET',
@@ -249,12 +225,12 @@ tap.test('configuration validation', async (t) => {
                 return datsMock;
             };
 
-            for (const method of PLUGIN_METHODS) {
+            for (const method of STATSD_METHODS) {
                 t.rejects(() => {
                     return setup({
-                        customDatsClient: generateDatsClient(method),
+                        client: generateDatsClient(method),
                     });
-                }, new Error(`customDatsClient does not implement ${method} method.`));
+                }, new Error(`client does not implement ${method} method.`));
             }
         }
     );
@@ -263,7 +239,9 @@ tap.test('configuration validation', async (t) => {
 tap.test('decorators', async (t) => {
     t.test('default metrcs decorator', async (t) => {
         const server = await setup({
-            host: 'udp://127.0.0.1:12000',
+            client: {
+                host: 'udp://127.0.0.1:12000',
+            },
         });
         t.ok(server.hasDecorator('metrics'));
         t.ok(server.metrics.sampler instanceof Sampler);
@@ -274,17 +252,17 @@ tap.test('decorators', async (t) => {
         t.equal('function', typeof server.metrics.hrtime2ns);
         t.equal('function', typeof server.metrics.hrtime2ms);
         t.equal('function', typeof server.metrics.hrtime2s);
-        for (const method of PLUGIN_METHODS) {
+        for (const method of STATSD_METHODS) {
             t.equal('function', typeof server.metrics.client[method]);
         }
     });
 
     t.test('without sampler', async (t) => {
         const server = await setup({
-            host: 'udp://127.0.0.1:12000',
-            collect: {
-                health: false,
+            client: {
+                host: 'udp://127.0.0.1:12000',
             },
+            health: false,
         });
         t.ok(server.hasDecorator('metrics'));
         t.notOk(server.metrics.sampler instanceof Sampler);
@@ -295,14 +273,16 @@ tap.test('decorators', async (t) => {
         t.equal('function', typeof server.metrics.hrtime2ns);
         t.equal('function', typeof server.metrics.hrtime2ms);
         t.equal('function', typeof server.metrics.hrtime2s);
-        for (const method of PLUGIN_METHODS) {
+        for (const method of STATSD_METHODS) {
             t.equal('function', typeof server.metrics.client[method]);
         }
     });
 
     t.test('request and reply decorators', async (t) => {
         const server = await setup({
-            host: 'udp://127.0.0.1:12000',
+            client: {
+                host: 'udp://127.0.0.1:12000',
+            },
         });
 
         t.ok(server.hasRequestDecorator('sendTimingMetric'));
@@ -330,8 +310,10 @@ tap.test('decorators', async (t) => {
 tap.test('hooks', async (t) => {
     t.test('fastify close', async (t) => {
         const server = await setup({
-            host: `udp://127.0.0.1:7000`,
-            namespace: 'ns',
+            client: {
+                host: `udp://127.0.0.1:7000`,
+                namespace: 'ns',
+            },
         });
         t.resolves(server.close());
     });
@@ -341,8 +323,10 @@ tap.test('hooks', async (t) => {
     });
     t.test('dats onError', async (t) => {
         const server = await setup({
-            host: `udp://127.0.0.1:7000`,
-            namespace: 'ns',
+            client: {
+                host: `udp://127.0.0.1:7000`,
+                namespace: 'ns',
+            },
         });
         t.teardown(() => server.close());
         const spy = sinon.spy(server.log, 'error');
@@ -361,9 +345,13 @@ tap.test('metrics collection', async (t) => {
     );
     t.test('process health metrics', async (t) => {
         const server = await setup({
-            host: `udp://127.0.0.1:${t.context.address.port}`,
-            namespace: 'health_test',
-            sampleInterval: 2000,
+            client: {
+                host: `udp://127.0.0.1:${t.context.address.port}`,
+                namespace: 'health_test',
+            },
+            health: {
+                sampleInterval: 2000,
+            },
         });
         t.teardown(async () => {
             t.context.statsd.removeAllListeners('metric');
@@ -404,7 +392,7 @@ tap.test('metrics collection', async (t) => {
     });
 
     t.test('routes metrics', async (t) => {
-        t.test('static mode', { only: true }, async (t) => {
+        t.test('static mode', async (t) => {
             t.autoend(true);
             async function setup(opts = {}, cb) {
                 if (!cb) {
@@ -425,27 +413,18 @@ tap.test('metrics collection', async (t) => {
                     };
                 }
 
-                const defaults = {
-                    host: `udp://127.0.0.1:${t.context.address.port}`,
-                    collect: {
-                        routes: {
-                            mode: 'static',
-                        },
-                    },
-                };
-
-                const { collect, ...o } = opts;
-                const routes = (collect && collect.routes) || {};
+                const client = opts.client || {};
+                const routes = opts.routes || {};
                 const pluginOpts = {
-                    ...defaults,
-                    ...o,
-                    collect: {
-                        routes: {
-                            ...routes,
-                            mode: 'static',
-                        },
-                        health: false,
+                    client: {
+                        ...client,
+                        host: `udp://127.0.0.1:${t.context.address.port}`,
                     },
+                    routes: {
+                        ...routes,
+                        mode: 'static',
+                    },
+                    health: false,
                 };
                 const app = fastify();
                 app.register(plugin, pluginOpts);
@@ -455,8 +434,7 @@ tap.test('metrics collection', async (t) => {
                 app.get(
                     '/id',
                     { config: { metrics: { routeId: 'myId-1' } } },
-                    async function (request, reply) {
-                        cb(request, reply);
+                    async function () {
                         return { ok: true };
                     }
                 );
@@ -491,8 +469,7 @@ tap.test('metrics collection', async (t) => {
                         f.get(
                             '/id',
                             { config: { metrics: { routeId: 'myId-2' } } },
-                            async function (request, reply) {
-                                cb(request, reply);
+                            async function () {
                                 return { ok: true };
                             }
                         );
@@ -530,7 +507,9 @@ tap.test('metrics collection', async (t) => {
             }
             t.test('default metrics', async (t) => {
                 const app = await setup({
-                    namespace: 'static_routes_test',
+                    client: {
+                        namespace: 'static_routes_test',
+                    },
                 });
                 t.teardown(async () => {
                     t.context.statsd.removeAllListeners('metric');
@@ -625,11 +604,11 @@ tap.test('metrics collection', async (t) => {
 
             t.test('custom prefix', async (t) => {
                 const app = await setup({
-                    namespace: 'static_routes_custom_prefix_test',
-                    collect: {
-                        routes: {
-                            prefix: 'prefix',
-                        },
+                    client: {
+                        namespace: 'static_routes_custom_prefix_test',
+                    },
+                    routes: {
+                        prefix: 'prefix',
                     },
                 });
                 t.teardown(async () => {
@@ -726,32 +705,30 @@ tap.test('metrics collection', async (t) => {
             t.test('custom getLabel', async (t) => {
                 const app = await setup(
                     {
-                        namespace: 'static_routes_custom_getlabel_test',
-                        collect: {
-                            routes: {
-                                getLabel: function (options) {
-                                    t.ok(typeof options.prefix === 'string');
-                                    t.ok(options.config);
-                                    t.ok(options.config.metrics);
-                                    t.ok(
-                                        options.config.metrics.routesPrefix ===
-                                            ''
-                                    );
-                                    t.equal(
-                                        'string',
-                                        typeof options.config.metrics.routeId
-                                    );
-                                    t.equal(
-                                        'string',
-                                        typeof options.config.metrics
-                                            .fastifyPrefix
-                                    );
-                                    t.ok(options.method);
-                                    t.ok(options.url);
-                                    t.ok(options.path);
-                                    t.ok(options.handler);
-                                    return 'customLabel';
-                                },
+                        client: {
+                            namespace: 'static_routes_custom_getlabel_test',
+                        },
+                        routes: {
+                            getLabel: function (options) {
+                                t.ok(typeof options.prefix === 'string');
+                                t.ok(options.config);
+                                t.ok(options.config.metrics);
+                                t.ok(
+                                    options.config.metrics.routesPrefix === ''
+                                );
+                                t.equal(
+                                    'string',
+                                    typeof options.config.metrics.routeId
+                                );
+                                t.equal(
+                                    'string',
+                                    typeof options.config.metrics.fastifyPrefix
+                                );
+                                t.ok(options.method);
+                                t.ok(options.url);
+                                t.ok(options.path);
+                                t.ok(options.handler);
+                                return 'customLabel';
                             },
                         },
                     },
@@ -855,33 +832,33 @@ tap.test('metrics collection', async (t) => {
             t.test('custom getLabel and custom prefix', async (t) => {
                 const app = await setup(
                     {
-                        namespace: 'static_routes_custom_prefix_getlabel_test',
-                        collect: {
-                            routes: {
-                                prefix: 'prefix',
-                                getLabel: function (options) {
-                                    t.ok(typeof options.prefix === 'string');
-                                    t.ok(options.config);
-                                    t.ok(options.config.metrics);
-                                    t.ok(
-                                        options.config.metrics.routesPrefix ===
-                                            'prefix'
-                                    );
-                                    t.equal(
-                                        'string',
-                                        typeof options.config.metrics.routeId
-                                    );
-                                    t.equal(
-                                        'string',
-                                        typeof options.config.metrics
-                                            .fastifyPrefix
-                                    );
-                                    t.ok(options.method);
-                                    t.ok(options.url);
-                                    t.ok(options.path);
-                                    t.ok(options.handler);
-                                    return 'customLabel';
-                                },
+                        client: {
+                            namespace:
+                                'static_routes_custom_prefix_getlabel_test',
+                        },
+                        routes: {
+                            prefix: 'prefix',
+                            getLabel: function (options) {
+                                t.ok(typeof options.prefix === 'string');
+                                t.ok(options.config);
+                                t.ok(options.config.metrics);
+                                t.ok(
+                                    options.config.metrics.routesPrefix ===
+                                        'prefix'
+                                );
+                                t.equal(
+                                    'string',
+                                    typeof options.config.metrics.routeId
+                                );
+                                t.equal(
+                                    'string',
+                                    typeof options.config.metrics.fastifyPrefix
+                                );
+                                t.ok(options.method);
+                                t.ok(options.url);
+                                t.ok(options.path);
+                                t.ok(options.handler);
+                                return 'customLabel';
                             },
                         },
                     },
@@ -983,7 +960,7 @@ tap.test('metrics collection', async (t) => {
             });
         });
 
-        t.test('dynamic mode', { only: true }, async (t) => {
+        t.test('dynamic mode', async (t) => {
             t.autoend(true);
             async function setup(opts = {}, cb) {
                 if (!cb) {
@@ -1003,27 +980,19 @@ tap.test('metrics collection', async (t) => {
                         );
                     };
                 }
-                const defaults = {
-                    host: `udp://127.0.0.1:${t.context.address.port}`,
-                    collect: {
-                        routes: {
-                            mode: 'dynamic',
-                        },
-                    },
-                };
 
-                const { collect, ...o } = opts;
-                const routes = (collect && collect.routes) || {};
+                const client = opts.client || {};
+                const routes = opts.routes || {};
                 const pluginOpts = {
-                    ...defaults,
-                    ...o,
-                    collect: {
-                        routes: {
-                            ...routes,
-                            mode: 'dynamic',
-                        },
-                        health: false,
+                    client: {
+                        ...client,
+                        host: `udp://127.0.0.1:${t.context.address.port}`,
                     },
+                    routes: {
+                        ...routes,
+                        mode: 'dynamic',
+                    },
+                    health: false,
                 };
                 const app = fastify();
                 app.register(plugin, pluginOpts);
@@ -1034,8 +1003,7 @@ tap.test('metrics collection', async (t) => {
                     f.get(
                         '/id',
                         { config: { metrics: { routeId: 'myId-1' } } },
-                        async function (request, reply) {
-                            cb(request, reply);
+                        async function () {
                             return { ok: true };
                         }
                     );
@@ -1065,15 +1033,13 @@ tap.test('metrics collection', async (t) => {
                 });
                 app.register(
                     async function (f) {
-                        f.get('/', async function (request, reply) {
-                            cb(request, reply);
+                        f.get('/', async function () {
                             return { ok: true };
                         });
                         f.get(
                             '/id',
                             { config: { metrics: { routeId: 'myId-2' } } },
-                            async function (request, reply) {
-                                cb(request, reply);
+                            async function () {
                                 return { ok: true };
                             }
                         );
@@ -1112,7 +1078,9 @@ tap.test('metrics collection', async (t) => {
 
             t.test('default metrics', async (t) => {
                 const app = await setup({
-                    namespace: 'dynamic_routes_test',
+                    client: {
+                        namespace: 'dynamic_routes_test',
+                    },
                 });
                 t.teardown(async () => {
                     t.context.statsd.removeAllListeners('metric');
@@ -1207,11 +1175,11 @@ tap.test('metrics collection', async (t) => {
 
             t.test('custom prefix', async (t) => {
                 const app = await setup({
-                    namespace: 'dynamic_routes_custom_prefix_test',
-                    collect: {
-                        routes: {
-                            prefix: 'prefix',
-                        },
+                    client: {
+                        namespace: 'dynamic_routes_custom_prefix_test',
+                    },
+                    routes: {
+                        prefix: 'prefix',
                     },
                 });
                 t.teardown(async () => {
@@ -1308,38 +1276,37 @@ tap.test('metrics collection', async (t) => {
             t.test('custom getLabel', async (t) => {
                 const app = await setup(
                     {
-                        namespace: 'dynamic_routes_custom_getlabel_test',
-                        collect: {
-                            routes: {
-                                getLabel: function (request, reply) {
-                                    t.ok(typeof this.prefix === 'string');
+                        client: {
+                            namespace: 'dynamic_routes_custom_getlabel_test',
+                        },
+                        routes: {
+                            getLabel: function (request, reply) {
+                                t.ok(typeof this.prefix === 'string');
+                                t.ok(
+                                    typeof this.metrics.routesPrefix ===
+                                        'string'
+                                );
+                                for (const r of [request, reply]) {
                                     t.ok(
-                                        typeof this.metrics.routesPrefix ===
-                                            'string'
+                                        typeof r.context.config.metrics ===
+                                            'object'
                                     );
-                                    for (const r of [request, reply]) {
-                                        t.ok(
-                                            typeof r.context.config.metrics ===
-                                                'object'
-                                        );
-                                        t.equal(
-                                            'string',
-                                            typeof r.context.config.metrics
-                                                .routeId
-                                        );
-                                        t.equal(
-                                            'string',
-                                            typeof r.context.config.metrics
-                                                .fastifyPrefix
-                                        );
-                                        t.equal(
-                                            'string',
-                                            typeof r.context.config.metrics
-                                                .routesPrefix
-                                        );
-                                    }
-                                    return 'customLabel';
-                                },
+                                    t.equal(
+                                        'string',
+                                        typeof r.context.config.metrics.routeId
+                                    );
+                                    t.equal(
+                                        'string',
+                                        typeof r.context.config.metrics
+                                            .fastifyPrefix
+                                    );
+                                    t.equal(
+                                        'string',
+                                        typeof r.context.config.metrics
+                                            .routesPrefix
+                                    );
+                                }
+                                return 'customLabel';
                             },
                         },
                     },
@@ -1443,38 +1410,36 @@ tap.test('metrics collection', async (t) => {
             t.test('custom getLabel and custom prefix', async (t) => {
                 const app = await setup(
                     {
-                        namespace: 'dynamic_routes_custom_prefix_getlabel_test',
-                        collect: {
-                            routes: {
-                                prefix: 'prefix',
-                                getLabel: function (request, reply) {
-                                    t.ok(typeof this.prefix === 'string');
+                        client: {
+                            namespace:
+                                'dynamic_routes_custom_prefix_getlabel_test',
+                        },
+                        routes: {
+                            prefix: 'prefix',
+                            getLabel: function (request, reply) {
+                                t.ok(typeof this.prefix === 'string');
+                                t.ok(this.metrics.routesPrefix === 'prefix');
+                                for (const r of [request, reply]) {
                                     t.ok(
-                                        this.metrics.routesPrefix === 'prefix'
+                                        typeof r.context.config.metrics ===
+                                            'object'
                                     );
-                                    for (const r of [request, reply]) {
-                                        t.ok(
-                                            typeof r.context.config.metrics ===
-                                                'object'
-                                        );
-                                        t.equal(
-                                            'string',
-                                            typeof r.context.config.metrics
-                                                .routeId
-                                        );
-                                        t.equal(
-                                            'string',
-                                            typeof r.context.config.metrics
-                                                .fastifyPrefix
-                                        );
-                                        t.equal(
-                                            'string',
-                                            typeof r.context.config.metrics
-                                                .routesPrefix
-                                        );
-                                    }
-                                    return 'customLabel';
-                                },
+                                    t.equal(
+                                        'string',
+                                        typeof r.context.config.metrics.routeId
+                                    );
+                                    t.equal(
+                                        'string',
+                                        typeof r.context.config.metrics
+                                            .fastifyPrefix
+                                    );
+                                    t.equal(
+                                        'string',
+                                        typeof r.context.config.metrics
+                                            .routesPrefix
+                                    );
+                                }
+                                return 'customLabel';
                             },
                         },
                     },
@@ -1580,12 +1545,11 @@ tap.test('metrics collection', async (t) => {
     t.test('disabling process health metrics', async (t) => {
         const sampleInterval = 10;
         const server = await setup({
-            host: `udp://127.0.0.1:${t.context.address.port}`,
-            sampleInterval,
-            namespace: 'disable_health_test',
-            collect: {
-                health: false,
+            client: {
+                host: `udp://127.0.0.1:${t.context.address.port}`,
+                namespace: 'disable_health_test',
             },
+            health: false,
         });
         t.teardown(async () => {
             t.context.statsd.removeAllListeners('metric');
@@ -1639,12 +1603,12 @@ tap.test('metrics collection', async (t) => {
 
     t.test('disabling routes timings metric', async (t) => {
         const server = await setup({
-            host: `udp://127.0.0.1:${t.context.address.port}`,
-            namespace: 'disable_routes_timings_test',
-            collect: {
-                routes: {
-                    timing: false,
-                },
+            client: {
+                host: `udp://127.0.0.1:${t.context.address.port}`,
+                namespace: 'disable_routes_timings_test',
+            },
+            routes: {
+                timing: false,
             },
         });
         t.teardown(async () => {
@@ -1688,12 +1652,13 @@ tap.test('metrics collection', async (t) => {
 
     t.test('disabling routes hits metric', async (t) => {
         const server = await setup({
-            host: `udp://127.0.0.1:${t.context.address.port}`,
-            namespace: 'disable_routes_hits_test',
-            collect: {
-                routes: {
-                    hits: false,
-                },
+            client: {
+                host: `udp://127.0.0.1:${t.context.address.port}`,
+                namespace: 'disable_routes_hits_test',
+            },
+
+            routes: {
+                hits: false,
             },
         });
         t.teardown(async () => {
@@ -1736,12 +1701,13 @@ tap.test('metrics collection', async (t) => {
     });
     t.test('disabling routes errors metric', async (t) => {
         const server = await setup({
-            host: `udp://127.0.0.1:${t.context.address.port}`,
-            namespace: 'disabling_routes_errors_test',
-            collect: {
-                routes: {
-                    errors: false,
-                },
+            client: {
+                host: `udp://127.0.0.1:${t.context.address.port}`,
+                namespace: 'disabling_routes_errors_test',
+            },
+
+            routes: {
+                errors: false,
             },
         });
         t.teardown(async () => {
@@ -1787,9 +1753,13 @@ tap.test('metrics collection', async (t) => {
     t.test('sending requests metrics TCP', async (t) => {
         t.plan(2);
         const server = await setup({
-            host: `tcp://127.0.0.1:${t.context.addressTCP.port}`,
-            namespace: 'metrics_over_tcp',
-            sampleInterval: 1000,
+            client: {
+                host: `tcp://127.0.0.1:${t.context.addressTCP.port}`,
+                namespace: 'metrics_over_tcp',
+            },
+            health: {
+                sampleInterval: 1000,
+            },
         });
         t.teardown(async () => {
             t.context.statsdTCP.removeAllListeners('metric');
@@ -1824,17 +1794,16 @@ tap.test('metrics collection', async (t) => {
     t.test('disabling all default metrics', async (t) => {
         const sampleInterval = 10;
         const server = await setup({
-            host: `udp://127.0.0.1:${t.context.address.port}`,
-            sampleInterval,
-            namespace: 'disabling_all_metrics_test',
-            collect: {
-                routes: {
-                    timing: false,
-                    hits: false,
-                    errors: false,
-                },
-                health: false,
+            client: {
+                host: `udp://127.0.0.1:${t.context.address.port}`,
+                namespace: 'disabling_all_metrics_test',
             },
+            routes: {
+                timing: false,
+                hits: false,
+                errors: false,
+            },
+            health: false,
         });
         t.teardown(async () => {
             t.context.statsd.removeAllListeners('metric');
