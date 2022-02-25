@@ -349,6 +349,50 @@ tap.test('hooks', async (t) => {
         server.metrics.client.socket.onError(new Error('test'));
         t.equal('test', spy.getCall(0).firstArg.message);
     });
+
+    t.test('two routes can not have the same id', async (t) => {
+        const app = fastify();
+        app.register(plugin, {
+            host: `udp://127.0.0.1:7000`,
+            namespace: 'ns',
+        });
+        app.get('/', async function () {
+            return { ok: true };
+        });
+        app.get('/ok', async function () {
+            return { ok: true };
+        });
+        app.get(
+            '/id',
+            {
+                config: {
+                    metrics: {
+                        routeId: '123',
+                    },
+                },
+            },
+            async function () {
+                return { ok: true };
+            }
+        );
+
+        t.rejects(
+            app.get(
+                '/trowing',
+                {
+                    config: {
+                        metrics: {
+                            routeId: '123',
+                        },
+                    },
+                },
+                async function () {
+                    return { ok: true };
+                }
+            ),
+            `Duplicated id, you have just used the id "123" for the route /id`
+        );
+    });
 });
 
 tap.test('metrics collection', async (t) => {

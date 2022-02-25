@@ -196,17 +196,8 @@ module.exports = fp(
             metricsConfig.routes.errors ||
             metricsConfig.routes.hits
         ) {
-            fastify.addHook('onRoute', (options) => {
-                // TODO: check for duplicates when registering routes
-                options.config = options.config || {};
-                options.config.metrics = options.config.metrics || {};
-                options.config.metrics.routeId = getRouteId(options.config);
-                options.config.metrics.fastifyPrefix = normalizeFastifyPrefix(
-                    options.prefix
-                );
-                options.config.metrics.routesPrefix = metrics.routesPrefix;
-                options.config.metrics[kMetricsLabel] = '';
-            });
+            fastify.addHook('onRoute', onRouteBind(metrics));
+
             if (mode === 'dynamic') {
                 let getLabel =
                     metricsConfig.routes.getLabel || dynamicMode.getLabel;
@@ -314,3 +305,30 @@ module.exports = fp(
         fastify: '3.x',
     }
 );
+
+function onRouteBind(metrics) {
+    // map id to route url
+    const idToRoute = new Map();
+    return function (options) {
+        options.config = options.config || {};
+        options.config.metrics = options.config.metrics || {};
+        options.config.metrics.routeId = getRouteId(options.config);
+
+        // Check for duplicated routes
+        if (idToRoute.has(getRouteId(options.config))) {
+            throw new Error(
+                `Duplicated id, you have just used the id "${getRouteId(
+                    options.config
+                )}" for the route ${idToRoute.get(getRouteId(options.config))}`
+            );
+        }
+        if (getRouteId(options.config) !== 'noId')
+            idToRoute.set(getRouteId(options.config), options.url);
+
+        options.config.metrics.fastifyPrefix = normalizeFastifyPrefix(
+            options.prefix
+        );
+        options.config.metrics.routesPrefix = metrics.routesPrefix;
+        options.config.metrics[kMetricsLabel] = '';
+    };
+}
