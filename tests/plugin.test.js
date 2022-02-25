@@ -3,6 +3,7 @@
 const tap = require('tap');
 const fastify = require('fastify');
 const { Sampler } = require('@dnlup/doc');
+const { default: Dats } = require('@immobiliarelabs/dats');
 const sinon = require('sinon');
 const { StatsdMock } = require('./helpers/statsd');
 const StatsdMockTCP = require('./helpers/statsdTCP');
@@ -207,6 +208,10 @@ tap.test('configuration validation', async (t) => {
         });
 
         t.ok(stub.called);
+
+        t.resolves(
+            setup({ client: new Dats({ host: 'udp://localhost:7000' }) })
+        );
     });
 
     t.test(
