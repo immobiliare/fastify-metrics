@@ -119,8 +119,7 @@ module.exports = fp(
         }
 
         let stats;
-        // If client is a custom client or is not an options object
-        if (client instanceof Client || isCustomClient(client)) {
+        if (isCustomClient(client)) {
             for (const method of STATSD_METHODS) {
                 const fn = client[method];
                 if (!fn || typeof fn !== 'function')
