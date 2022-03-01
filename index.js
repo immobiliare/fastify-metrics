@@ -20,6 +20,7 @@ const {
     isCustomClient,
 } = require('./lib/util');
 const { kMetricsLabel } = require('./lib/symbols');
+const decorateWithMethods = require('./lib/decorate');
 
 function clientMock() {
     const mock = {
@@ -217,67 +218,7 @@ module.exports = fp(
 
         fastify.addHook('onClose', hooks.onClose);
 
-        fastify.decorateRequest(
-            'sendTimingMetric',
-            mode === 'static'
-                ? staticMode.bindTimingMetric(stats)
-                : dynamicMode.bindTimingMetric(stats)
-        );
-        fastify.decorateRequest(
-            'sendCounterMetric',
-            mode === 'static'
-                ? staticMode.bindCounterMetric(stats)
-                : dynamicMode.bindCounterMetric(stats)
-        );
-        fastify.decorateRequest(
-            'sendGaugeMetric',
-            mode === 'static'
-                ? staticMode.bindGaugeMetric(stats)
-                : dynamicMode.bindGaugeMetric(stats)
-        );
-        fastify.decorateRequest(
-            'sendSetMetric',
-            mode === 'static'
-                ? staticMode.bindSetMetric(stats)
-                : dynamicMode.bindSetMetric(stats)
-        );
-        fastify.decorateRequest(
-            'getMetricLabel',
-            mode === 'static'
-                ? staticMode.getRouteLabel
-                : dynamicMode.getRouteLabel
-        );
-
-        fastify.decorateReply(
-            'sendTimingMetric',
-            mode === 'static'
-                ? staticMode.bindTimingMetric(stats)
-                : dynamicMode.bindTimingMetric(stats)
-        );
-        fastify.decorateReply(
-            'sendCounterMetric',
-            mode === 'static'
-                ? staticMode.bindCounterMetric(stats)
-                : dynamicMode.bindCounterMetric(stats)
-        );
-        fastify.decorateReply(
-            'sendGaugeMetric',
-            mode === 'static'
-                ? staticMode.bindGaugeMetric(stats)
-                : dynamicMode.bindGaugeMetric(stats)
-        );
-        fastify.decorateReply(
-            'sendSetMetric',
-            mode === 'static'
-                ? staticMode.bindSetMetric(stats)
-                : dynamicMode.bindSetMetric(stats)
-        );
-        fastify.decorateReply(
-            'getMetricLabel',
-            mode === 'static'
-                ? staticMode.getRouteLabel
-                : dynamicMode.getRouteLabel
-        );
+        decorateWithMethods(fastify, mode, stats);
 
         if (config.routes.hits) {
             fastify.addHook('onRequest', hooks.onRequest);
