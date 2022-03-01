@@ -24,7 +24,8 @@ It supports Fastify versions `>=3.0.0`.
     -   [`npm`](#npm)
     -   [`yarn`](#yarn)
 -   [Usage](#usage)
-    -   [Notes](#notes)
+-   [Route Configuration](#route-configuration)
+    -   [INFO](#info)
 -   [Metrics collected](#metrics-collected)
 -   [Decorators](#decorators)
     -   [Fastify decorators](#fastify-decorators)
@@ -108,9 +109,15 @@ fastify.route(route);
 fastify.listen(3000);
 ```
 
-### Notes
+## Route Configuration
 
-The plugin uses the key `routeId` in the `metrics` object of the `config` object in the `Request.context` or `Reply.context`. If none is found a default `noId` string is used.
+To configure a route, you have to pass a `metrics` object with the `routeId` key set with a not empty string.
+
+If the `routeId` is not passed or is set with a falsy value, the route will not be metricated, and all route metrics methods will be disabled.
+
+### INFO
+
+The plugin uses the key `routeId` in the `metrics` object of the `config` object in the `Request.context` or `Reply.context`.
 
 See
 

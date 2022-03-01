@@ -13,9 +13,19 @@ const { STATSD_METHODS } = require('../lib/util');
 async function setup(opts) {
     const app = fastify();
     app.register(plugin, opts);
-    app.get('/', async function () {
-        return { ok: true };
-    });
+    app.get(
+        '/',
+        {
+            config: {
+                metrics: {
+                    routeId: 'noId',
+                },
+            },
+        },
+        async function () {
+            return { ok: true };
+        }
+    );
     app.get(
         '/id',
         {
@@ -29,15 +39,25 @@ async function setup(opts) {
             return { ok: true };
         }
     );
-    app.get('/oops', async function () {
-        throw new Error('oops');
-    });
+    app.get(
+        '/oops',
+        {
+            config: {
+                metrics: {
+                    routeId: 'noId',
+                },
+            },
+        },
+        async function () {
+            throw new Error('oops');
+        }
+    );
     await app.ready();
     return app;
 }
 
 tap.test('configuration validation', async (t) => {
-    t.test('valid otions', async (t) => {
+    t.test('valid options', async (t) => {
         const configs = [
             {
                 value: undefined,
@@ -433,9 +453,32 @@ tap.test('metrics collection', async (t) => {
                 };
                 const app = fastify();
                 app.register(plugin, pluginOpts);
-                app.get('/', async function () {
+
+                app.get('/no-metrics', async function (request, reply) {
+                    reply.sendTimingMetric('time', 1);
+                    reply.sendCounterMetric('count', 1);
+                    reply.sendGaugeMetric('gauge', 1);
+                    reply.sendSetMetric('set', 1);
+                    request.sendTimingMetric('time', 1);
+                    request.sendCounterMetric('count', 1);
+                    request.sendGaugeMetric('gauge', 1);
+                    request.sendSetMetric('set', 1);
                     return { ok: true };
                 });
+
+                app.get(
+                    '/',
+                    {
+                        config: {
+                            metrics: {
+                                routeId: 'noId',
+                            },
+                        },
+                    },
+                    async function () {
+                        return { ok: true };
+                    }
+                );
                 app.get(
                     '/id',
                     { config: { metrics: { routeId: 'myId-1' } } },
@@ -443,14 +486,24 @@ tap.test('metrics collection', async (t) => {
                         return { ok: true };
                     }
                 );
-                app.get('/reply-decorators', async function (request, reply) {
-                    reply.sendTimingMetric('time', 1);
-                    reply.sendCounterMetric('count', 1);
-                    reply.sendGaugeMetric('gauge', 1);
-                    reply.sendSetMetric('set', 1);
-                    cb(request, reply);
-                    return { ok: true };
-                });
+                app.get(
+                    '/reply-decorators',
+                    {
+                        config: {
+                            metrics: {
+                                routeId: 'noId',
+                            },
+                        },
+                    },
+                    async function (request, reply) {
+                        reply.sendTimingMetric('time', 1);
+                        reply.sendCounterMetric('count', 1);
+                        reply.sendGaugeMetric('gauge', 1);
+                        reply.sendSetMetric('set', 1);
+                        cb(request, reply);
+                        return { ok: true };
+                    }
+                );
                 app.get(
                     '/reply-decorators/id',
                     { config: { metrics: { routeId: 'replyId-1' } } },
@@ -463,14 +516,34 @@ tap.test('metrics collection', async (t) => {
                         return { ok: true };
                     }
                 );
-                app.get('/oops', async function () {
-                    throw new Error('oops');
-                });
+                app.get(
+                    '/oops',
+                    {
+                        config: {
+                            metrics: {
+                                routeId: 'noId',
+                            },
+                        },
+                    },
+                    async function () {
+                        throw new Error('oops');
+                    }
+                );
                 app.register(
                     async function (f) {
-                        f.get('/', async function () {
-                            return { ok: true };
-                        });
+                        f.get(
+                            '/',
+                            {
+                                config: {
+                                    metrics: {
+                                        routeId: 'noId',
+                                    },
+                                },
+                            },
+                            async function () {
+                                return { ok: true };
+                            }
+                        );
                         f.get(
                             '/id',
                             { config: { metrics: { routeId: 'myId-2' } } },
@@ -480,6 +553,13 @@ tap.test('metrics collection', async (t) => {
                         );
                         f.get(
                             '/reply-decorators',
+                            {
+                                config: {
+                                    metrics: {
+                                        routeId: 'noId',
+                                    },
+                                },
+                            },
                             async function (request, reply) {
                                 reply.sendTimingMetric('time', 1);
                                 reply.sendCounterMetric('count', 1);
@@ -501,9 +581,19 @@ tap.test('metrics collection', async (t) => {
                                 return { ok: true };
                             }
                         );
-                        f.get('/oops', async function () {
-                            throw new Error('oops');
-                        });
+                        f.get(
+                            '/oops',
+                            {
+                                config: {
+                                    metrics: {
+                                        routeId: 'noId',
+                                    },
+                                },
+                            },
+                            async function () {
+                                throw new Error('oops');
+                            }
+                        );
                     },
                     { prefix: '/static/test' }
                 );
@@ -523,6 +613,7 @@ tap.test('metrics collection', async (t) => {
                 await Promise.all([
                     (async () => {
                         for (const url of [
+                            '/no-metrics',
                             '/',
                             '/id',
                             '/oops',
@@ -1002,9 +1093,30 @@ tap.test('metrics collection', async (t) => {
                 const app = fastify();
                 app.register(plugin, pluginOpts);
                 app.register(async function (f) {
-                    f.get('/', async function () {
+                    f.get('/no-metrics', async function (request, reply) {
+                        reply.sendTimingMetric('time', 1);
+                        reply.sendCounterMetric('count', 1);
+                        reply.sendGaugeMetric('gauge', 1);
+                        reply.sendSetMetric('set', 1);
+                        request.sendTimingMetric('time', 1);
+                        request.sendCounterMetric('count', 1);
+                        request.sendGaugeMetric('gauge', 1);
+                        request.sendSetMetric('set', 1);
                         return { ok: true };
                     });
+                    f.get(
+                        '/',
+                        {
+                            config: {
+                                metrics: {
+                                    routeId: 'noId',
+                                },
+                            },
+                        },
+                        async function () {
+                            return { ok: true };
+                        }
+                    );
                     f.get(
                         '/id',
                         { config: { metrics: { routeId: 'myId-1' } } },
@@ -1012,14 +1124,24 @@ tap.test('metrics collection', async (t) => {
                             return { ok: true };
                         }
                     );
-                    f.get('/reply-decorators', async function (request, reply) {
-                        reply.sendTimingMetric('time', 1);
-                        reply.sendCounterMetric('count', 1);
-                        reply.sendGaugeMetric('gauge', 1);
-                        reply.sendSetMetric('set', 1);
-                        cb(request, reply);
-                        return { ok: true };
-                    });
+                    f.get(
+                        '/reply-decorators',
+                        {
+                            config: {
+                                metrics: {
+                                    routeId: 'noId',
+                                },
+                            },
+                        },
+                        async function (request, reply) {
+                            reply.sendTimingMetric('time', 1);
+                            reply.sendCounterMetric('count', 1);
+                            reply.sendGaugeMetric('gauge', 1);
+                            reply.sendSetMetric('set', 1);
+                            cb(request, reply);
+                            return { ok: true };
+                        }
+                    );
                     f.get(
                         '/reply-decorators/id',
                         { config: { metrics: { routeId: 'replyId-1' } } },
@@ -1032,15 +1154,46 @@ tap.test('metrics collection', async (t) => {
                             return { ok: true };
                         }
                     );
-                    f.get('/oops', async function () {
-                        throw new Error('oops');
-                    });
+                    f.get(
+                        '/oops',
+                        {
+                            config: {
+                                metrics: {
+                                    routeId: 'noId',
+                                },
+                            },
+                        },
+                        async function () {
+                            throw new Error('oops');
+                        }
+                    );
                 });
                 app.register(
                     async function (f) {
-                        f.get('/', async function () {
+                        f.get('/no-metrics', async function (request, reply) {
+                            reply.sendTimingMetric('time', 1);
+                            reply.sendCounterMetric('count', 1);
+                            reply.sendGaugeMetric('gauge', 1);
+                            reply.sendSetMetric('set', 1);
+                            request.sendTimingMetric('time', 1);
+                            request.sendCounterMetric('count', 1);
+                            request.sendGaugeMetric('gauge', 1);
+                            request.sendSetMetric('set', 1);
                             return { ok: true };
                         });
+                        f.get(
+                            '/',
+                            {
+                                config: {
+                                    metrics: {
+                                        routeId: 'noId',
+                                    },
+                                },
+                            },
+                            async function () {
+                                return { ok: true };
+                            }
+                        );
                         f.get(
                             '/id',
                             { config: { metrics: { routeId: 'myId-2' } } },
@@ -1050,6 +1203,13 @@ tap.test('metrics collection', async (t) => {
                         );
                         f.get(
                             '/reply-decorators',
+                            {
+                                config: {
+                                    metrics: {
+                                        routeId: 'noId',
+                                    },
+                                },
+                            },
                             async function (request, reply) {
                                 reply.sendTimingMetric('time', 1);
                                 reply.sendCounterMetric('count', 1);
@@ -1071,9 +1231,19 @@ tap.test('metrics collection', async (t) => {
                                 return { ok: true };
                             }
                         );
-                        f.get('/oops', async function () {
-                            throw new Error('oops');
-                        });
+                        f.get(
+                            '/oops',
+                            {
+                                config: {
+                                    metrics: {
+                                        routeId: 'noId',
+                                    },
+                                },
+                            },
+                            async function () {
+                                throw new Error('oops');
+                            }
+                        );
                     },
                     { prefix: '/dynamic/test' }
                 );
@@ -1094,6 +1264,8 @@ tap.test('metrics collection', async (t) => {
                 await Promise.all([
                     (async () => {
                         for (const url of [
+                            'no-metrics',
+                            '/dynamic/test/no-metrics',
                             '/',
                             '/id',
                             '/oops',
