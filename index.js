@@ -62,7 +62,14 @@ const DEFAULT_CONFIG_OPTIONS = {
          * TODO: rename in responseTime
          */
         timing: true,
-        // TODO: add responseSize
+        /**
+         * Route response size
+         */
+        responseSize: false,
+        /**
+         * Route request size
+         */
+        requestSize: false,
         /**
          * Route hit counter
          */
@@ -93,7 +100,13 @@ module.exports = fp(
             ...others,
         };
 
-        for (const key of ['timing', 'hits', 'errors']) {
+        for (const key of [
+            'timing',
+            'responseSize',
+            'requestSize',
+            'hits',
+            'errors',
+        ]) {
             if (typeof config.routes[key] !== 'boolean') {
                 throw new Error(`"${key}" must be a boolean.`);
             }
@@ -221,6 +234,12 @@ module.exports = fp(
         }
         if (config.routes.errors) {
             fastify.addHook('onError', hooks.onError);
+        }
+        if (config.routes.requestSize) {
+            fastify.addHook('preValidation', hooks.onRequestSize);
+        }
+        if (config.routes.responseSize) {
+            fastify.addHook('onResponse', hooks.onResponseSize);
         }
     },
     {
