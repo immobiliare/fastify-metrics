@@ -174,51 +174,44 @@ module.exports = fp(
         });
         fastify.decorate('metrics', metrics);
 
-        if (
-            config.routes.timing ||
-            config.routes.errors ||
-            config.routes.hits
-        ) {
-            fastify.addHook('onRoute', (options) => {
-                // TODO: check for duplicates when registering routes
-                options.config = options.config || {};
-                options.config.metrics = options.config.metrics || {};
-                options.config.metrics.routeId = getRouteId(options.config);
-                options.config.metrics.fastifyPrefix = normalizeFastifyPrefix(
-                    options.prefix
-                );
-                options.config.metrics.routesPrefix = metrics.routesPrefix;
-                options.config.metrics[kMetricsLabel] = '';
-            });
-            if (mode === 'dynamic') {
-                let getLabel = config.routes.getLabel || dynamicMode.getLabel;
-                if (typeof getLabel !== 'function') {
-                    throw new Error('"getLabel" must be a function.');
-                }
-                fastify.decorateRequest(kMetricsLabel, '');
-                fastify.decorateReply(kMetricsLabel, '');
-                fastify.addHook('onRequest', function (request, reply, next) {
-                    // TODO: skip noId routes here and in hooks.
-                    const label = getLabel.call(this, request, reply);
-                    request[kMetricsLabel] = label;
-                    reply[kMetricsLabel] = label;
-                    next();
-                });
-            } else {
-                const getLabel = config.routes.getLabel || staticMode.getLabel;
-                if (typeof getLabel !== 'function') {
-                    throw new Error('"getLabel" must be a function.');
-                }
-                // TODO: skip noId routes here and in hooks.
-                fastify.addHook('onRoute', (options) => {
-                    options.config.metrics[kMetricsLabel] = getLabel(options);
-                });
+        fastify.addHook('onRoute', (options) => {
+            options.config = options.config || {};
+            options.config.metrics = options.config.metrics || {};
+            options.config.metrics.routeId = getRouteId(options.config);
+            options.config.metrics.fastifyPrefix = normalizeFastifyPrefix(
+                options.prefix
+            );
+            options.config.metrics.routesPrefix = metrics.routesPrefix;
+            options.config.metrics[kMetricsLabel] = '';
+        });
+        if (mode === 'dynamic') {
+            let getLabel = config.routes.getLabel || dynamicMode.getLabel;
+            if (typeof getLabel !== 'function') {
+                throw new Error('"getLabel" must be a function.');
             }
+            fastify.decorateRequest(kMetricsLabel, '');
+            fastify.decorateReply(kMetricsLabel, '');
+            fastify.addHook('onRequest', function (request, reply, next) {
+                // TODO: skip noId routes here and in hooks.
+                const label = getLabel.call(this, request, reply);
+                request[kMetricsLabel] = label;
+                reply[kMetricsLabel] = label;
+                next();
+            });
+        } else {
+            const getLabel = config.routes.getLabel || staticMode.getLabel;
+            if (typeof getLabel !== 'function') {
+                throw new Error('"getLabel" must be a function.');
+            }
+            // TODO: skip noId routes here and in hooks.
+            fastify.addHook('onRoute', (options) => {
+                options.config.metrics[kMetricsLabel] = getLabel(options);
+            });
         }
 
-        fastify.addHook('onClose', hooks.onClose);
-
         decorateWithMethods(fastify, mode, stats);
+
+        fastify.addHook('onClose', hooks.onClose);
 
         if (config.routes.hits) {
             fastify.addHook('onRequest', hooks.onRequest);
