@@ -8,11 +8,11 @@
 ![npm (scoped)](https://img.shields.io/npm/v/@immobiliarelabs/fastify-metrics)
 ![license](https://img.shields.io/github/license/immobiliare/fastify-metrics)
 
-> A minimalistic and opinionated [Fastify](https://www.fastify.io/) plugin that collects metrics and dispatches them to [statsd](https://github.com/statsd/statsd).
+> A slighlty opinionated [Fastify](https://www.fastify.io/) plugin that collects metrics and dispatches them to [statsd](https://github.com/statsd/statsd).
 
 If you write your services and apps using `Fastify` and also use `statsd`, this plugin might be for you!
 
-It automatically collects Node.js process metrics along with routes hit count, timings and errors and uses the [`Dats`](https://github.com/immobiliare/dats) client to send them to a `stasd` collector.
+It automatically collects Node.js process metrics along with routes stats like hit count, timings and errors and uses the [`Dats`](https://github.com/immobiliare/dats) client to send them to a `stasd` collector.
 
 It supports Fastify versions `>=3.0.0`.
 
@@ -23,9 +23,10 @@ It supports Fastify versions `>=3.0.0`.
 -   [Installation](#installation)
     -   [`npm`](#npm)
     -   [`yarn`](#yarn)
+-   [Migrating from version 1](#migrating-from-version-1)
 -   [Usage](#usage)
 -   [Route Configuration](#route-configuration)
-    -   [INFO](#info)
+    -   [Note](#note)
 -   [Metrics collected](#metrics-collected)
 -   [Decorators](#decorators)
     -   [Fastify decorators](#fastify-decorators)
@@ -51,9 +52,9 @@ It supports Fastify versions `>=3.0.0`.
     -   [Configuration `options`](#configuration-options)
         -   [Routes labels generation modes](#routes-labels-generation-modes)
             -   [computedPrefix](#computedprefix)
-            *   [`static`](#static)
+            *   [`static` mode](#static-mode)
                 -   [`getLabel(options)`](#getlabeloptions)
-            *   [`dynamic`](#dynamic)
+            *   [`dynamic` mode](#dynamic-mode)
                 -   [`getLabel(request, reply)`](#getlabelrequest-reply)
 -   [Powered Apps](#powered-apps)
 -   [Support & Contribute](#support--contribute)
@@ -81,18 +82,26 @@ $ yarn add @immobiliarelabs/fastify-metrics
 $ yarn @immobiliarelabs/fastify-metrics@next
 ```
 
+## Migrating from version 1
+
+See the [migration guide](./MIGRATION_GUIDE.md) if you have to migrate from the version 1 to 2 of this plugin.
+
 ## Usage
 
 ```js
 const fastify = require('fastify')();
 
 fastify.register(require('@immobiliarelabs/fastify-metrics'), {
-    host: 'udp://someip:someport',
-    namespace: 'ns',
+    client: {
+        host: 'udp://someip:someport',
+        namespace: 'ns',
+    },
 });
 
 const route = {
     // This is required in order to associate a metric to a route
+    // If an object `metrics` with a `routeId` is not passed the route stats will be
+    // ignored.
     config: {
         metrics: {
             routeId: 'root.getStatus',
@@ -115,9 +124,11 @@ To configure a route, you have to pass a `metrics` object with the `routeId` key
 
 If the `routeId` is not passed or is set with a falsy value, the route will not be metricated, and all route metrics methods will be disabled.
 
-### INFO
+There are more usage examples in the [`examples`](./examples) folder.
 
-The plugin uses the key `routeId` in the `metrics` object of the `config` object in the `Request.context` or `Reply.context`.
+### Note
+
+The plugin internally uses the key `routeId` in the `metrics` object of the `config` object in the `Request.context` or `Reply.context` to build the label of the metric of a route.
 
 See
 
@@ -140,6 +151,8 @@ These are the metrics that are collected automatically.
 | `<METRICS_NAMESPACE>.<computedPrefix>.<routeId>.requests`            | `counter` | unit                            | requests count per service route               |
 | `<METRICS_NAMESPACE>.<computedPrefix>.<routeId>.errors.<statusCode>` | `counter` | unit                            | errors count per service route and status code |
 | `<METRICS_NAMESPACE>.<computedPrefix>.<routeId>.response_time`       | `timing`  | milliseconds                    | response time per service route                |
+
+**To know more about how the `computedPrefix` and the route label are built see [here](#routes-labels-generation-modes)**.
 
 ## Decorators
 
@@ -169,7 +182,7 @@ The normalized fastify instance `prefix`.
 
 -   <`string`>
 
-The normalized routes `prefix` passed to the `collect.routes.prefix` option.
+The normalized routes `prefix` passed to the `routes.prefix` option.
 
 ##### `metrics.client`
 
@@ -177,7 +190,7 @@ The [Dats](https://github.com/immobiliare/dats) instance.
 
 ##### `metrics.sampler`
 
-The [sampler](https://github.com/dnlup/doc) instance used to sample process metrics, if `options.collect.health` is `true`.
+The [sampler](https://github.com/dnlup/doc) instance used to sample process metrics, if `options.health` is `true`.
 
 ##### `metrics.hrtime2us`
 
@@ -241,9 +254,9 @@ It sends a timing metric. It automatically prepends the route label to the passe
 
 The plugin uses the following hooks:
 
--   `onRoute`: to generate the route labels at startup time if `collect.routes.mode` is set to `'static'`.
+-   `onRoute`: to generate the route labels at startup time if `routes.mode` is set to `'static'`.
 -   `onClose`: to close the [Dats](https://github.com/immobiliare/dats) instance and the [sampler](https://github.com/dnlup/doc#new-docsampleroptions) instance.
--   `onRequest`: it registers a hook to count requests and, if `collect.routes.mode` is set to `'dynamic'`, it adds another one to generate the route label.
+-   `onRequest`: it registers a hook to count requests and, if `routes.mode` is set to `'dynamic'`, it adds another one to generate the route label.
 -   `onResponse`: to measure response time
 -   `onError`: to count errors
 
@@ -279,7 +292,7 @@ This module exports a [plugin registration function](https://github.com/fastify/
 
 #### Routes labels generation modes
 
-There are two different mode to generate the label for each route that the plugin can see:
+There are two different modes to generate the label for each route:
 
 -   `static`
 -   `dynamic`
@@ -288,14 +301,14 @@ There are two different mode to generate the label for each route that the plugi
 
 In both modes by default the plugin generates a prefix using:
 
--   the [`fastify` prefix](https://www.fastify.io/docs/latest/Reference/Server/#prefix) used to register the plugin (`fastifyPrefix`)
--   the routes prefix passed in the plugin option `collect.routes.prefix` (`routesPrefix`)
+-   the [`fastify` prefix](https://www.fastify.io/docs/latest/Reference/Server/#prefix) used to register the plugin (normalized replacing `/` with `.`), we call it `fastifyPrefix`
+-   the routes prefix passed to the plugin option `routes.prefix`, we call it `routesPrefix`
 
 Generating a computed prefix like this:
 
 `<fastifyPrefix>.<routesPrefix>`
 
-##### `static`
+##### `static` mode
 
 In this mode a [`onRoute` hook](https://www.fastify.io/docs/latest/Reference/Hooks/#onroute) is registered in the `fastify` instance and the plugin generates a label at startup time combining the following strings:
 
@@ -315,9 +328,11 @@ The `getLabel` function in this mode will have the following signature:
             -   `routesPrefix` <`string`>: the normalized routes prefix passed to the plugin options.
 -   **Returns:** <`string`> The route label string without any `.` at the beginning or end.
 
-##### `dynamic`
+Pay attention to avoid returing empty strings or strings with leading and trailing `.`.
 
-In this mode a [`onRequest` hook](https://www.fastify.io/docs/latest/Reference/Hooks/#onrequest) is registerd in the `fastify` instance and the plugin generates a label and attaches it to each request and reply (the `metricsLabel` key) combining the following strings:
+##### `dynamic` mode
+
+In this mode a [`onRequest` hook](https://www.fastify.io/docs/latest/Reference/Hooks/#onrequest) is registerd in the `fastify` instance and the plugin generates a label and attaches it to each request and reply combining the following strings:
 
 -   the [`fastify` prefix](https://www.fastify.io/docs/latest/Reference/Server/#prefix) used to register the plugin, accessible via the `prefix` key of the `fastify` instance.
 -   the routes prefix passed in the plugin options, accessible via the `metricsRoutesPrefix` decorator of the `fastify` instance.
@@ -331,7 +346,53 @@ The `getLabel` function in this mode will have the following signature:
 -   `reply`
 -   **Returns:** <`string`> The route label string without any `.` at the beginning or end.
 
-The `this` context of the function is bound to the fastify instance of the request.
+The `this` context of the function is bound to the fastify instance of the request. Pay attention to avoid returing empty strings or strings with leading and trailing `.`. Also, don't use arrow functions otherwhise the `this` context won't refer to the fastify instance.
+
+The default function used ifn you don't pass your custom one returns the same string that is computed in `static` mode, so the `dynamic` mode is not very useful if you don't define yuor own `getLabel` function.
+
+####### Example
+
+```js
+const fastify = require('fastify')();
+
+fastify.register(require('@immobiliarelabs/fastify-metrics'), {
+    client: {
+        host: 'udp://someip:someport',
+        namespace: 'ns',
+    },
+    routes: {
+        mode: 'dynamic',
+        getLabel: function (request, reply) {
+            const auth = request.user ? 'user' : 'anonim';
+            const { metrics } = request.context.config;
+            const routesPrefix = metrics.routesPrefix
+                ? `${metrics.routesPrefix}.`
+                : '';
+            const fastifyPrefix = metrics.fastifyPrefix
+                ? `${metrics.fastifyPrefix}.`
+                : '';
+            const routeId = metrics.routeId ? `${metrics.routeId}.` : '';
+            return `${fastifyPrefix}${routesPrefix}${routeId}${auth}`;
+        },
+    },
+});
+
+const route = {
+    config: {
+        metrics: {
+            routeId: 'root.getStatus',
+        },
+    },
+    url: '/',
+    method: 'GET',
+    handler(request, reply) {
+        reply.send({ ok: true });
+    },
+};
+fastify.route(route);
+
+fastify.listen(3000);
+```
 
 ## Powered Apps
 
