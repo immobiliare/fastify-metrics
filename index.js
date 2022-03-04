@@ -236,7 +236,7 @@ module.exports = fp(
             fastify.addHook('onError', hooks.onError);
         }
         if (config.routes.requestSize) {
-            fastify.addHook('preValidation', hooks.onRequestSize);
+            fastify.addHook('onRequest', hooks.onRequestSize);
         }
         if (config.routes.responseSize) {
             fastify.addHook('onResponse', hooks.onResponseSize);
