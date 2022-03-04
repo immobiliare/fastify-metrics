@@ -330,9 +330,7 @@ tap.test('custom getLabel and custom prefix', async (t) => {
         t,
         '/static/test'
     );
-    t.teardown(async () => {
-        return app.close();
-    });
+    t.teardown(async () => app.close());
     const urls = [
         '/',
         '/id',
