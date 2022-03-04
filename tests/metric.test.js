@@ -43,7 +43,7 @@ tap.test('response_size', async (t) => {
         url: '/',
     });
 
-    t.ok(app.metrics.client.hasSent(/rsTest\.response_size:8\|c/));
+    t.ok(app.metrics.client.hasSent(/rsTest\.response_size:8\|ms/));
 
     app.metrics.client.cleanMetrics();
 
@@ -52,7 +52,9 @@ tap.test('response_size', async (t) => {
         url: '/empty',
     });
 
-    t.notOk(app.metrics.client.hasSent(/rsTest\.response_size:\d+\|c/));
+    t.notOk(
+        app.metrics.client.hasSent(/rsTest\.response_size:\d+(\.\d+)?\|ms/)
+    );
 });
 
 tap.test('request_size', async (t) => {
@@ -81,7 +83,7 @@ tap.test('request_size', async (t) => {
         payload: { ok: 1 }, // 8 bytes is the size of the json payload
     });
 
-    t.ok(app.metrics.client.hasSent(/rsTest\.request_size:8\|c/));
+    t.ok(app.metrics.client.hasSent(/rsTest\.request_size:8\|ms/));
 
     app.metrics.client.cleanMetrics();
 
@@ -90,5 +92,5 @@ tap.test('request_size', async (t) => {
         url: '/empty',
     });
 
-    t.notOk(app.metrics.client.hasSent(/rsTest\.request_size:\d+\|c/));
+    t.notOk(app.metrics.client.hasSent(/rsTest\.request_size:\d+(\.\d+)?\|ms/));
 });
