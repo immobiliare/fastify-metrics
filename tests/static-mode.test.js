@@ -433,4 +433,26 @@ tap.test('custom getLabel and custom prefix', async (t) => {
             t
         ),
     ]);
+
+    tap.test('404 test', async (t) => {
+        const server = await setup(
+            {
+                client: {
+                    namespace: 'static_mode_404_errors',
+                },
+                health: false,
+            },
+            undefined,
+            t
+        );
+        t.teardown(async () => {
+            t.context.statsd.removeAllListeners('metric');
+            return server.close();
+        });
+        const response = await server.inject({
+            method: 'GET',
+            url: '/not-existing',
+        });
+        t.equal(404, response.statusCode);
+    });
 });
