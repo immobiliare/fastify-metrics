@@ -1,57 +1,37 @@
 'use strict';
 
 const tap = require('tap');
-const fastify = require('fastify');
 const { StatsdMock } = require('./helpers/statsd');
 const StatsdMockTCP = require('./helpers/statsdTCP');
-const plugin = require('../');
-const checkMetrics = require('./helpers/tester');
+const { checkMetrics } = require('./helpers/tester');
+const { setupRoutes } = require('./helpers/utils');
 
-async function setup(opts) {
-    const app = fastify();
-    app.register(plugin, opts);
-    app.get(
-        '/',
-        {
-            config: {
-                metrics: {
-                    routeId: 'noId',
-                },
-            },
-        },
-        async function () {
+const routes = [
+    {
+        url: '/',
+        method: ['GET'],
+        config: { metrics: { routeId: 'noId' } },
+        handler: async function () {
             return { ok: true };
-        }
-    );
-    app.get(
-        '/id',
-        {
-            config: {
-                metrics: {
-                    routeId: '123',
-                },
-            },
         },
-        async function () {
+    },
+    {
+        url: '/id',
+        method: ['GET'],
+        config: { metrics: { routeId: '123' } },
+        handler: async function () {
             return { ok: true };
-        }
-    );
-    app.get(
-        '/oops',
-        {
-            config: {
-                metrics: {
-                    routeId: 'noId',
-                },
-            },
         },
-        async function () {
+    },
+    {
+        url: '/oops',
+        method: ['GET'],
+        config: { metrics: { routeId: 'noId' } },
+        handler: async function () {
             throw new Error('oops');
-        }
-    );
-    await app.ready();
-    return app;
-}
+        },
+    },
+];
 
 tap.beforeEach(async (t) => {
     t.context = {};
@@ -66,15 +46,19 @@ tap.afterEach((t) =>
 );
 
 tap.test('process health metrics', async (t) => {
-    const server = await setup({
-        client: {
-            host: `udp://127.0.0.1:${t.context.address.port}`,
-            namespace: 'health_test',
+    const server = await setupRoutes(
+        {
+            client: {
+                host: `udp://127.0.0.1:${t.context.address.port}`,
+                namespace: 'health_test',
+            },
+            health: {
+                sampleInterval: 2000,
+            },
         },
-        health: {
-            sampleInterval: 2000,
-        },
-    });
+        routes,
+        false
+    );
     t.teardown(async () => {
         t.context.statsd.removeAllListeners('metric');
         return server.close();
@@ -95,14 +79,18 @@ tap.test('process health metrics', async (t) => {
 });
 
 tap.test('disabling process health metrics', async (t) => {
-    const sampleInterval = 10;
-    const server = await setup({
-        client: {
-            host: `udp://127.0.0.1:${t.context.address.port}`,
-            namespace: 'disable_health_test',
+    const sampleInterval = 1000;
+    const server = await setupRoutes(
+        {
+            client: {
+                host: `udp://127.0.0.1:${t.context.address.port}`,
+                namespace: 'disable_health_test',
+            },
+            health: false,
         },
-        health: false,
-    });
+        routes,
+        false
+    );
     t.teardown(async () => {
         t.context.statsd.removeAllListeners('metric');
         return server.close();
@@ -150,15 +138,19 @@ tap.test('disabling process health metrics', async (t) => {
 });
 
 tap.test('disabling routes timings metric', async (t) => {
-    const server = await setup({
-        client: {
-            host: `udp://127.0.0.1:${t.context.address.port}`,
-            namespace: 'disable_routes_timings_test',
+    const server = await setupRoutes(
+        {
+            client: {
+                host: `udp://127.0.0.1:${t.context.address.port}`,
+                namespace: 'disable_routes_timings_test',
+            },
+            routes: {
+                timing: false,
+            },
         },
-        routes: {
-            timing: false,
-        },
-    });
+        routes,
+        false
+    );
     t.teardown(async () => {
         t.context.statsd.removeAllListeners('metric');
         return server.close();
@@ -199,16 +191,20 @@ tap.test('disabling routes timings metric', async (t) => {
 });
 
 tap.test('disabling routes hits metric', async (t) => {
-    const server = await setup({
-        client: {
-            host: `udp://127.0.0.1:${t.context.address.port}`,
-            namespace: 'disable_routes_hits_test',
-        },
+    const server = await setupRoutes(
+        {
+            client: {
+                host: `udp://127.0.0.1:${t.context.address.port}`,
+                namespace: 'disable_routes_hits_test',
+            },
 
-        routes: {
-            hits: false,
+            routes: {
+                hits: false,
+            },
         },
-    });
+        routes,
+        false
+    );
     t.teardown(async () => {
         t.context.statsd.removeAllListeners('metric');
         return server.close();
@@ -248,16 +244,20 @@ tap.test('disabling routes hits metric', async (t) => {
 });
 
 tap.test('disabling routes errors metric', async (t) => {
-    const server = await setup({
-        client: {
-            host: `udp://127.0.0.1:${t.context.address.port}`,
-            namespace: 'disabling_routes_errors_test',
-        },
+    const server = await setupRoutes(
+        {
+            client: {
+                host: `udp://127.0.0.1:${t.context.address.port}`,
+                namespace: 'disabling_routes_errors_test',
+            },
 
-        routes: {
-            errors: false,
+            routes: {
+                errors: false,
+            },
         },
-    });
+        routes,
+        false
+    );
     t.teardown(async () => {
         t.context.statsd.removeAllListeners('metric');
         return server.close();
@@ -300,15 +300,19 @@ tap.test('disabling routes errors metric', async (t) => {
 
 tap.test('sending requests metrics TCP', async (t) => {
     t.plan(2);
-    const server = await setup({
-        client: {
-            host: `tcp://127.0.0.1:${t.context.addressTCP.port}`,
-            namespace: 'metrics_over_tcp',
+    const server = await setupRoutes(
+        {
+            client: {
+                host: `tcp://127.0.0.1:${t.context.addressTCP.port}`,
+                namespace: 'metrics_over_tcp',
+            },
+            health: {
+                sampleInterval: 1000,
+            },
         },
-        health: {
-            sampleInterval: 1000,
-        },
-    });
+        routes,
+        false
+    );
     t.teardown(async () => {
         t.context.statsdTCP.removeAllListeners('metric');
         return server.close();
@@ -337,18 +341,22 @@ tap.test('sending requests metrics TCP', async (t) => {
 
 tap.test('disabling all default metrics', async (t) => {
     const sampleInterval = 10;
-    const server = await setup({
-        client: {
-            host: `udp://127.0.0.1:${t.context.address.port}`,
-            namespace: 'disabling_all_metrics_test',
+    const server = await setupRoutes(
+        {
+            client: {
+                host: `udp://127.0.0.1:${t.context.address.port}`,
+                namespace: 'disabling_all_metrics_test',
+            },
+            routes: {
+                timing: false,
+                hits: false,
+                errors: false,
+            },
+            health: false,
         },
-        routes: {
-            timing: false,
-            hits: false,
-            errors: false,
-        },
-        health: false,
-    });
+        routes,
+        false
+    );
     t.teardown(async () => {
         t.context.statsd.removeAllListeners('metric');
         return server.close();

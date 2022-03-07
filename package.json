@@ -81,7 +81,7 @@
     "dependencies": {
         "@dnlup/doc": "^3.1.0",
         "@dnlup/hrtime-utils": "^1.0.1",
-        "@immobiliarelabs/dats": "^2.0.0",
+        "@immobiliarelabs/dats": "^2.1.0",
         "fastify-plugin": "^3.0.0"
     }
 }

@@ -28,7 +28,19 @@ class Tester {
     }
 }
 
-module.exports = function checkMetrics(regexes, t) {
+exports.checkMetricsMock = (regexes, app, t) => {
+    const tester = new Tester(regexes, t);
+
+    for (const metric of app.metrics.client.metrics) {
+        tester.checkMatch(metric);
+    }
+
+    if (!tester.isFinish()) {
+        t.fail(`Regexes don't match: ${tester.getRemainRegexes()}`);
+    }
+};
+
+exports.checkMetrics = (regexes, t) => {
     const tester = new Tester(regexes, t);
     return new Promise((resolve, reject) => {
         setTimeout(() => {
