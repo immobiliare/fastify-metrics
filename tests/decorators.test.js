@@ -1,65 +1,49 @@
 'use strict';
 
 const tap = require('tap');
-const fastify = require('fastify');
 const { Sampler } = require('@dnlup/doc');
 const sinon = require('sinon');
-const plugin = require('../');
 const { STATSD_METHODS } = require('../lib/util');
+const { setupRoutes } = require('./helpers/utils');
 
-async function setup(opts) {
-    const app = fastify();
-    app.register(plugin, opts);
-    app.get(
-        '/',
-        {
-            config: {
-                metrics: {
-                    routeId: 'noId',
-                },
-            },
-        },
-        async function () {
+const routes = [
+    {
+        url: '/',
+        method: ['GET'],
+        config: { metrics: { routeId: 'noId' } },
+        handler: async function () {
             return { ok: true };
-        }
-    );
-    app.get(
-        '/id',
-        {
-            config: {
-                metrics: {
-                    routeId: '123',
-                },
-            },
         },
-        async function () {
+    },
+    {
+        url: '/id',
+        method: ['GET'],
+        config: { metrics: { routeId: '123' } },
+        handler: async function () {
             return { ok: true };
-        }
-    );
-    app.get(
-        '/oops',
-        {
-            config: {
-                metrics: {
-                    routeId: 'noId',
-                },
-            },
         },
-        async function () {
+    },
+    {
+        url: '/oops',
+        method: ['GET'],
+        config: { metrics: { routeId: 'noId' } },
+        handler: async function () {
             throw new Error('oops');
-        }
-    );
-    await app.ready();
-    return app;
-}
+        },
+    },
+];
 
 tap.test('decorators', async (t) => {
     t.test('default metrcs decorator', async (t) => {
-        const server = await setup({
-            client: {
-                host: 'udp://127.0.0.1:12000',
+        const server = await setupRoutes(
+            {
+                client: {
+                    host: 'udp://127.0.0.1:12000',
+                },
             },
-        });
+            routes,
+            false
+        );
         t.ok(server.hasDecorator('metrics'));
         t.ok(server.metrics.sampler instanceof Sampler);
         t.equal('string', typeof server.metrics.namespace);
@@ -75,12 +59,16 @@ tap.test('decorators', async (t) => {
     });
 
     t.test('without sampler', async (t) => {
-        const server = await setup({
-            client: {
-                host: 'udp://127.0.0.1:12000',
+        const server = await setupRoutes(
+            {
+                client: {
+                    host: 'udp://127.0.0.1:12000',
+                },
+                health: false,
             },
-            health: false,
-        });
+            routes,
+            false
+        );
         t.ok(server.hasDecorator('metrics'));
         t.notOk(server.metrics.sampler instanceof Sampler);
         t.equal('string', typeof server.metrics.namespace);
@@ -96,11 +84,15 @@ tap.test('decorators', async (t) => {
     });
 
     t.test('request and reply decorators', async (t) => {
-        const server = await setup({
-            client: {
-                host: 'udp://127.0.0.1:12000',
+        const server = await setupRoutes(
+            {
+                client: {
+                    host: 'udp://127.0.0.1:12000',
+                },
             },
-        });
+            routes,
+            false
+        );
 
         t.ok(server.hasRequestDecorator('sendTimingMetric'));
         t.ok(server.hasRequestDecorator('sendCounterMetric'));
@@ -126,25 +118,33 @@ tap.test('decorators', async (t) => {
 
 tap.test('hooks', async (t) => {
     t.test('fastify close', async (t) => {
-        const server = await setup({
-            client: {
-                host: `udp://127.0.0.1:7000`,
-                namespace: 'ns',
+        const server = await setupRoutes(
+            {
+                client: {
+                    host: `udp://127.0.0.1:7000`,
+                    namespace: 'ns',
+                },
             },
-        });
+            routes,
+            false
+        );
         t.resolves(server.close());
     });
     t.test('fastify close with mocked client', async (t) => {
-        const server = await setup();
+        const server = await setupRoutes({}, routes, false);
         t.resolves(server.close());
     });
     t.test('dats onError', async (t) => {
-        const server = await setup({
-            client: {
-                host: `udp://127.0.0.1:7000`,
-                namespace: 'ns',
+        const server = await setupRoutes(
+            {
+                client: {
+                    host: `udp://127.0.0.1:7000`,
+                    namespace: 'ns',
+                },
             },
-        });
+            routes,
+            false
+        );
         t.teardown(() => server.close());
         const spy = sinon.spy(server.log, 'error');
         server.metrics.client.socket.onError(new Error('test'));
