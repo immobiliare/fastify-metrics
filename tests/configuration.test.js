@@ -73,6 +73,16 @@ tap.test('valid options', async (t) => {
                 },
             },
         },
+        {
+            value: {
+                routes: true,
+            },
+        },
+        {
+            value: {
+                routes: false,
+            },
+        },
     ];
     for (const config of configs) {
         t.resolves(setup(config));
@@ -83,11 +93,17 @@ tap.test('invalid options', async (t) => {
     const configs = [
         {
             value: {
+                routes: 'sdfsdf',
+            },
+            message: '"routes" must be a boolean or a config object.',
+        },
+        {
+            value: {
                 routes: {
                     responseTime: 'true',
                 },
             },
-            message: '"responseTime" must be a boolean.',
+            message: '"routes.responseTime" must be a boolean.',
         },
         {
             value: {
@@ -95,7 +111,7 @@ tap.test('invalid options', async (t) => {
                     hits: 1,
                 },
             },
-            message: '"hits" must be a boolean.',
+            message: '"routes.hits" must be a boolean.',
         },
         {
             value: {
@@ -103,7 +119,7 @@ tap.test('invalid options', async (t) => {
                     errors: {},
                 },
             },
-            message: '"errors" must be a boolean.',
+            message: '"routes.errors" must be a boolean.',
         },
         {
             value: {

@@ -146,3 +146,15 @@ expectType(
         },
     })
 );
+
+expectType(
+    getFastify({
+        routes: true,
+    })
+);
+
+expectType(
+    getFastify({
+        routes: false,
+    })
+);
