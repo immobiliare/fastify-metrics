@@ -137,6 +137,92 @@ tap.test('disabling process health metrics', async (t) => {
     ]);
 });
 
+tap.test('disabling routes metrics', async (t) => {
+    const server = await setup({
+        client: {
+            host: `udp://127.0.0.1:${t.context.address.port}`,
+            namespace: 'disable_routes_test',
+        },
+        routes: false,
+    });
+    t.teardown(async () => {
+        t.context.statsd.removeAllListeners('metric');
+        return server.close();
+    });
+    await Promise.all([
+        server.inject({
+            method: 'GET',
+            url: '/',
+        }),
+        new Promise((resolve) => {
+            const regexes = [
+                /disable_routes_test\.process\.mem\.external:\d+(\.\d+)?\|g/,
+                /disable_routes_test\.process\.mem\.rss:\d+(\.\d+)?\|g/,
+                /disable_routes_test\.process\.mem\.heapUsed:\d+(\.\d+)?\|g/,
+                /disable_routes_test\.process\.mem\.heapTotal:\d+(\.\d+)?\|g/,
+                /disable_routes_test\.process\.eventLoopDelay:\d+(\.\d+)?\|g/,
+                /disable_routes_test\.process\.eventLoopUtilization:\d+(\.\d+)?\|g/,
+                /disable_routes_test\.process\.cpu:\d+(\.\d+)?\|g/,
+            ];
+            const notExpected = [
+                /disable_routes_test\.noId\.requests:1\|c/,
+                /disable_routes_test\.noId\.response_time:\d+(\.\d+)?\|ms/,
+            ];
+            let cursor = 0;
+            t.context.statsd.on('metric', (buffer) => {
+                const metric = buffer.toString();
+                t.match(metric, regexes[cursor], `${metric} is not listed`);
+                for (const reg of notExpected) {
+                    t.notOk(
+                        reg.test(metric),
+                        `${metric} wasn't expected, it matched ${reg}`
+                    );
+                }
+                cursor++;
+                if (cursor >= regexes.length) {
+                    resolve();
+                }
+            });
+        }),
+    ]);
+});
+
+tap.test('enabling routes metrics', async (t) => {
+    const server = await setup({
+        client: {
+            host: `udp://127.0.0.1:${t.context.address.port}`,
+            namespace: 'enable_routes_test',
+        },
+        routes: true,
+        health: false,
+    });
+    t.teardown(async () => {
+        t.context.statsd.removeAllListeners('metric');
+        return server.close();
+    });
+    await Promise.all([
+        server.inject({
+            method: 'GET',
+            url: '/',
+        }),
+        new Promise((resolve) => {
+            const regexes = [
+                /enable_routes_test\.noId\.requests:1\|c/,
+                /enable_routes_test\.noId\.response_time:\d+(\.\d+)?\|ms/,
+            ];
+            let cursor = 0;
+            t.context.statsd.on('metric', (buffer) => {
+                const metric = buffer.toString();
+                t.match(metric, regexes[cursor], `${metric} is not listed`);
+                cursor++;
+                if (cursor >= regexes.length) {
+                    resolve();
+                }
+            });
+        }),
+    ]);
+});
+
 tap.test('disabling routes responseTime metric', async (t) => {
     const server = await setupRoutes(
         {

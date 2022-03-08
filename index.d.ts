@@ -79,7 +79,7 @@ type MetricsInstanceDecorator = {
 
 export interface MetricsPluginOptions {
     client?: ClientOptions | CustomClient;
-    routes?: RoutesOptions;
+    routes?: boolean | RoutesOptions;
     health?: boolean | SamplerOptions;
 }
 

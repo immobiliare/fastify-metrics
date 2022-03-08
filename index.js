@@ -84,17 +84,41 @@ const DEFAULT_CONFIG_OPTIONS = {
     health: true,
 };
 
+function routesConfig(config, defaultConfig) {
+    if (config === true) {
+        return defaultConfig;
+    } else if (config === false) {
+        return {
+            ...defaultConfig,
+            timing: false,
+            hits: false,
+            errors: false,
+        };
+    } else {
+        return {
+            ...defaultConfig,
+            ...config,
+        };
+    }
+}
+
 module.exports = fp(
     async function (fastify, opts) {
         const { client = {}, routes, ...others } = opts;
-        // TODO: allow to pass routes: false to disable the routes alltoghether.
+        if (opts.routes) {
+            if (
+                typeof opts.routes !== 'boolean' &&
+                typeof opts.routes !== 'object'
+            ) {
+                throw new Error(
+                    '"routes" must be a boolean or a config object.'
+                );
+            }
+        }
         const { routes: defaultRoutes, ...defaultOthers } =
             DEFAULT_CONFIG_OPTIONS;
         const config = {
-            routes: {
-                ...defaultRoutes,
-                ...routes,
-            },
+            routes: routesConfig(routes, defaultRoutes),
             ...defaultOthers,
             ...others,
         };
@@ -107,7 +131,7 @@ module.exports = fp(
             'errors',
         ]) {
             if (typeof config.routes[key] !== 'boolean') {
-                throw new Error(`"${key}" must be a boolean.`);
+                throw new Error(`"routes.${key}" must be a boolean.`);
             }
         }
         if (
@@ -204,7 +228,6 @@ module.exports = fp(
             fastify.decorateRequest(kMetricsLabel, '');
             fastify.decorateReply(kMetricsLabel, '');
             fastify.addHook('onRequest', function (request, reply, next) {
-                // TODO: skip noId routes here and in hooks.
                 const label = getLabel.call(this, request, reply);
                 request[kMetricsLabel] = label;
                 reply[kMetricsLabel] = label;
@@ -215,7 +238,6 @@ module.exports = fp(
             if (typeof getLabel !== 'function') {
                 throw new Error('"getLabel" must be a function.');
             }
-            // TODO: skip noId routes here and in hooks.
             fastify.addHook('onRoute', (options) => {
                 options.config.metrics[kMetricsLabel] = getLabel(options);
             });
