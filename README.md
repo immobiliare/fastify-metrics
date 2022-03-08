@@ -50,12 +50,13 @@ It supports Fastify versions `>=3.0.0`.
 -   [Request and Reply context](#request-and-reply-context)
 -   [API](#api)
     -   [Configuration `options`](#configuration-options)
-        -   [Routes labels generation modes](#routes-labels-generation-modes)
-            -   [computedPrefix](#computedprefix)
-            *   [`static` mode](#static-mode)
-                -   [`getLabel(options)`](#getlabeloptions)
-            *   [`dynamic` mode](#dynamic-mode)
-                -   [`getLabel(request, reply)`](#getlabelrequest-reply)
+    -   [Routes labels generation modes](#routes-labels-generation-modes)
+        -   [computedPrefix](#computedprefix)
+        *   [`static` mode](#static-mode)
+            -   [`getLabel(options)`](#getlabeloptions)
+        *   [`dynamic` mode](#dynamic-mode)
+            -   [`getLabel(request, reply)`](#getlabelrequest-reply)
+            -   [Example](#example)
 -   [Powered Apps](#powered-apps)
 -   [Support & Contribute](#support--contribute)
 -   [License](#license)
@@ -290,14 +291,14 @@ This module exports a [plugin registration function](https://github.com/fastify/
     -   `sampleInterval` <`number`> The number of milliseconds of the interval to get the metrics sample.
     -   `eventLoopOptions` <`Object`> The options object used to configure the core [`monitorEventLoopDelay`](https://nodejs.org/docs/latest-v16.x/api/perf_hooks.html#perf_hooksmonitoreventloopdelayoptions).
 
-#### Routes labels generation modes
+### Routes labels generation modes
 
 There are two different modes to generate the label for each route:
 
 -   `static`
 -   `dynamic`
 
-###### computedPrefix
+##### computedPrefix
 
 In both modes by default the plugin generates a prefix using:
 
@@ -308,7 +309,7 @@ Generating a computed prefix like this:
 
 `<fastifyPrefix>.<routesPrefix>`
 
-##### `static` mode
+#### `static` mode
 
 In this mode a [`onRoute` hook](https://www.fastify.io/docs/latest/Reference/Hooks/#onroute) is registered in the `fastify` instance and the plugin generates a label at startup time combining the following strings:
 
@@ -318,7 +319,7 @@ In this mode a [`onRoute` hook](https://www.fastify.io/docs/latest/Reference/Hoo
 
 The `getLabel` function in this mode will have the following signature:
 
-###### `getLabel(options)`
+##### `getLabel(options)`
 
 -   `options` [<`Object`>](https://www.fastify.io/docs/latest/Reference/Hooks/#onroute) The route registration
     -   `config`
@@ -330,7 +331,7 @@ The `getLabel` function in this mode will have the following signature:
 
 Pay attention to avoid returing empty strings or strings with leading and trailing `.`.
 
-##### `dynamic` mode
+#### `dynamic` mode
 
 In this mode a [`onRequest` hook](https://www.fastify.io/docs/latest/Reference/Hooks/#onrequest) is registerd in the `fastify` instance and the plugin generates a label and attaches it to each request and reply combining the following strings:
 
@@ -340,7 +341,7 @@ In this mode a [`onRequest` hook](https://www.fastify.io/docs/latest/Reference/H
 
 The `getLabel` function in this mode will have the following signature:
 
-###### `getLabel(request, reply)`
+##### `getLabel(request, reply)`
 
 -   `request`
 -   `reply`
@@ -350,7 +351,7 @@ The `this` context of the function is bound to the fastify instance of the reque
 
 If you don't pass your custom function, the default one returns the same string computed in `static` mode. Hence, the `dynamic` mode is not very useful if you don't define your own `getLabel` function.
 
-####### Example
+##### Example
 
 ```js
 const fastify = require('fastify')();
