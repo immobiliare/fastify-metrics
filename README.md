@@ -348,7 +348,7 @@ The `getLabel` function in this mode will have the following signature:
 
 The `this` context of the function is bound to the fastify instance of the request. Pay attention to avoid returing empty strings or strings with leading and trailing `.`. Also, don't use arrow functions otherwhise the `this` context won't refer to the fastify instance.
 
-The default function used ifn you don't pass your custom one returns the same string that is computed in `static` mode, so the `dynamic` mode is not very useful if you don't define yuor own `getLabel` function.
+If you don't pass your custom function, the default one returns the same string computed in `static` mode. Hence, the `dynamic` mode is not very useful if you don't define your own `getLabel` function.
 
 ####### Example
 
