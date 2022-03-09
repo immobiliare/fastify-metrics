@@ -138,20 +138,22 @@ See
 
 ## Metrics collected
 
-These are the metrics that are collected automatically.
+These are the metrics that can be collected with their respective label.
 
-| Name                                                                 | Type      | Unit of measure                 | Description                                    |
-| :------------------------------------------------------------------- | :-------- | :------------------------------ | :--------------------------------------------- |
-| `<METRICS_NAMESPACE>.process.cpu`                                    | `gauge`   | percentage                      | process cpu usage                              |
-| `<METRICS_NAMESPACE>.process.mem.external`                           | `gauge`   | bytes                           | process external memory                        |
-| `<METRICS_NAMESPACE>.process.mem.rss`                                | `gauge`   | bytes                           | process rss memory                             |
-| `<METRICS_NAMESPACE>.process.mem.heapUsed`                           | `gauge`   | bytes                           | process heap used memory                       |
-| `<METRICS_NAMESPACE>.process.mem.heapTotal`                          | `gauge`   | bytes                           | process heap total memory                      |
-| `<METRICS_NAMESPACE>.process.eventLoopDelay`                         | `gauge`   | milliseconds                    | process event loop delay                       |
-| `<METRICS_NAMESPACE>.process.eventLoopUtilization`                   | `gauge`   | absolute number between 0 and 1 | process event loop utilization                 |
-| `<METRICS_NAMESPACE>.<computedPrefix>.<routeId>.requests`            | `counter` | unit                            | requests count per service route               |
-| `<METRICS_NAMESPACE>.<computedPrefix>.<routeId>.errors.<statusCode>` | `counter` | unit                            | errors count per service route and status code |
-| `<METRICS_NAMESPACE>.<computedPrefix>.<routeId>.response_time`       | `timing`  | milliseconds                    | response time per service route                |
+| Name                                                                 | Type      | Unit of measure                 | Description                    |
+| :------------------------------------------------------------------- | :-------- | :------------------------------ | :----------------------------- |
+| `<METRICS_NAMESPACE>.process.cpu`                                    | `gauge`   | percentage                      | process cpu usage              |
+| `<METRICS_NAMESPACE>.process.mem.external`                           | `gauge`   | bytes                           | process external memory        |
+| `<METRICS_NAMESPACE>.process.mem.rss`                                | `gauge`   | bytes                           | process rss memory             |
+| `<METRICS_NAMESPACE>.process.mem.heapUsed`                           | `gauge`   | bytes                           | process heap used memory       |
+| `<METRICS_NAMESPACE>.process.mem.heapTotal`                          | `gauge`   | bytes                           | process heap total memory      |
+| `<METRICS_NAMESPACE>.process.eventLoopDelay`                         | `gauge`   | milliseconds                    | process event loop delay       |
+| `<METRICS_NAMESPACE>.process.eventLoopUtilization`                   | `gauge`   | absolute number between 0 and 1 | process event loop utilization |
+| `<METRICS_NAMESPACE>.<computedPrefix>.<routeId>.requests`            | `counter` | unit                            | requests count per service     |
+| `<METRICS_NAMESPACE>.<computedPrefix>.<routeId>.errors.<statusCode>` | `counter` | unit                            | errors count per service       |
+| `<METRICS_NAMESPACE>.<computedPrefix>.<routeId>.request_size`        | `timing`  | bytes                           | request size                   |
+| `<METRICS_NAMESPACE>.<computedPrefix>.<routeId>.response_time`       | `timing`  | milliseconds                    | response time                  |
+| `<METRICS_NAMESPACE>.<computedPrefix>.<routeId>.response_size`       | `timing`  | bytes                           | response time                  |
 
 **To know more about how the `computedPrefix` and the route label are built see [here](#routes-labels-generation-modes)**.
 
@@ -221,33 +223,33 @@ See [hrtime-utils](https://github.com/dnlup/hrtime-utils#hrtime2stime).
 
 #### `getMetricLabel()`
 
--   **Returns** <`string`>: the computed metric label of the route.
+-   **Returns** <`string`> The computed metric label of the route.
 
 #### `sendTimingMetric(name[, value])`
 
--   name <`string`>: the name of the metric
--   value <`number`>: the value of the metric
+-   name <`string`> The name of the metric
+-   value <`number`> The value of the metric
 
 It sends a timing metric. It automatically prepends the route label to the passed `name`. It is just a small wrapper of the native `Dats` client method.
 
 #### `sendCounterMetric(name[, value])`
 
--   name <`string`>: the name of the metric
--   value <`number`>: the value of the metric
+-   name <`string`> The name of the metric
+-   value <`number`> The value of the metric
 
 It sends a counter metric. It automatically prepends the route label to the passed `name`. It is just a small wrapper of the native `Dats` client method.
 
 #### `sendGaugeMetric(name, value)`
 
--   name <`string`>: the name of the metric
--   value <`number`>: the value of the metric
+-   name <`string`> The name of the metric
+-   value <`number`> The value of the metric
 
 It sends a gauge metric. It automatically prepends the route label to the passed `name`. It is just a small wrapper of the native `Dats` client method.
 
 #### `sendSetMetric(name, value)`
 
--   name <`string`>: the name of the metric
--   value <`number`>: the value of the metric
+-   name <`string`> The name of the metric
+-   value <`number`> The value of the metric
 
 It sends a timing metric. It automatically prepends the route label to the passed `name`. It is just a small wrapper of the native `Dats` client method.
 
@@ -265,9 +267,9 @@ The plugin uses the following hooks:
 
 The plugin adds a `metrics` object to the context for convenience with the following properties:
 
--   `routeId` <`string`>: the id for the current route
--   `fastifyPrefix` <`string`>: the prefix of the fastify instance registering the route, with the `/` replaced with `.` and without the `.` at the beginning.
--   `routesPrefix` <`string`>: the routes prefix passed to the plugin options and without `.` at the beginning and end.
+-   `routeId` <`string`> The id for the current route
+-   `fastifyPrefix` <`string`> The prefix of the fastify instance registering the route, with the `/` replaced with `.` and without the `.` at the beginning.
+-   `routesPrefix` <`string`> The routes prefix passed to the plugin options and without `.` at the beginning and end.
 
 These properties can be useful when using a custom [`getLabel`](routes-labels-generation-modes) function.
 
@@ -284,7 +286,9 @@ This module exports a [plugin registration function](https://github.com/fastify/
     -   `mode` <`'static'`|`'dynamic'`> The [strategy](#routes-labels-generation-modes) to generate the route metric label.
     -   `prefix` <`string`> The prefix to use for the routes labels (`<METRICS_NAMESPACE>.<computedPrefix>.<routeId>.*`). It defaults to `''` (no prefix).
     -   `getLabel` <`Function`> A custom function to generate the route label. It has a different signature depending on the [mode](#routes-labels-generation-modes).
-    -   `timings` <`boolean`> Collect response timings (`<METRICS_NAMESPACE>.<computedPrefix>.<routeId>`). Default: `true`.
+    -   `timing` <`boolean`> Collect response timings (`<METRICS_NAMESPACE>.<computedPrefix>.<routeId>`). Default: `true`.
+    -   `requestSize` <`boolean`> Collect request size (`<METRICS_NAMESPACE>.<computedPrefix>.requests.<routeId>`). Default: `false`.
+    -   `responseSize` <`boolean`> Collect response size (`<METRICS_NAMESPACE>.<computedPrefix>.requests.<routeId>`). Default: `false`.
     -   `hits` <`boolean`> Collect requests count (`<METRICS_NAMESPACE>.<computedPrefix>.requests.<routeId>`). Default: `true`.
     -   `errors` <`boolean`> Collect errors count (`<METRICS_NAMESPACE>.<computedPrefix>.errors.<routeId>.<statusCode>`). Default: `true`.
 -   `health` <`boolean`|`Object`> Flag to enable/disable the collection of the process health data(`<METRICS_NAMESPACE>.process.*`) or an object to configure a subset of the health metrics provided by the [sampler](https://github.com/dnlup/doc#new-docsampleroptions). Default: `true`.
@@ -324,9 +328,9 @@ The `getLabel` function in this mode will have the following signature:
 -   `options` [<`Object`>](https://www.fastify.io/docs/latest/Reference/Hooks/#onroute) The route registration
     -   `config`
         -   `metrics`
-            -   `routeId` <`string`>: the id used to initialize the route.
-            -   `fastifyPrefix` <`string`>: the normalized prefix of the fastify instance registering the route.
-            -   `routesPrefix` <`string`>: the normalized routes prefix passed to the plugin options.
+            -   `routeId` <`string`> The id used to initialize the route.
+            -   `fastifyPrefix` <`string`> The normalized prefix of the fastify instance registering the route.
+            -   `routesPrefix` <`string`> The normalized routes prefix passed to the plugin options.
 -   **Returns:** <`string`> The route label string without any `.` at the beginning or end.
 
 Pay attention to avoid returing empty strings or strings with leading and trailing `.`.
