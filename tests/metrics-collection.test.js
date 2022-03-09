@@ -137,15 +137,15 @@ tap.test('disabling process health metrics', async (t) => {
     ]);
 });
 
-tap.test('disabling routes timings metric', async (t) => {
+tap.test('disabling routes responseTime metric', async (t) => {
     const server = await setupRoutes(
         {
             client: {
                 host: `udp://127.0.0.1:${t.context.address.port}`,
-                namespace: 'disable_routes_timings_test',
+                namespace: 'disable_routes_responseTime_test',
             },
             routes: {
-                timing: false,
+                responseTime: false,
             },
         },
         routes,
@@ -162,17 +162,17 @@ tap.test('disabling routes timings metric', async (t) => {
         }),
         new Promise((resolve) => {
             const regexes = [
-                /disable_routes_timings_test\.noId\.requests:1\|c/,
-                /disable_routes_timings_test\.process\.mem\.external:\d+(\.\d+)?\|g/,
-                /disable_routes_timings_test\.process\.mem\.rss:\d+(\.\d+)?\|g/,
-                /disable_routes_timings_test\.process\.mem\.heapUsed:\d+(\.\d+)?\|g/,
-                /disable_routes_timings_test\.process\.mem\.heapTotal:\d+(\.\d+)?\|g/,
-                /disable_routes_timings_test\.process\.eventLoopDelay:\d+(\.\d+)?\|g/,
-                /disable_routes_timings_test\.process\.eventLoopUtilization:\d+(\.\d+)?\|g/,
-                /disable_routes_timings_test\.process\.cpu:\d+(\.\d+)?\|g/,
+                /disable_routes_responseTime_test\.noId\.requests:1\|c/,
+                /disable_routes_responseTime_test\.process\.mem\.external:\d+(\.\d+)?\|g/,
+                /disable_routes_responseTime_test\.process\.mem\.rss:\d+(\.\d+)?\|g/,
+                /disable_routes_responseTime_test\.process\.mem\.heapUsed:\d+(\.\d+)?\|g/,
+                /disable_routes_responseTime_test\.process\.mem\.heapTotal:\d+(\.\d+)?\|g/,
+                /disable_routes_responseTime_test\.process\.eventLoopDelay:\d+(\.\d+)?\|g/,
+                /disable_routes_responseTime_test\.process\.eventLoopUtilization:\d+(\.\d+)?\|g/,
+                /disable_routes_responseTime_test\.process\.cpu:\d+(\.\d+)?\|g/,
             ];
             const notExpected =
-                /disable_routes_timings_test\.noId:\d+(\.\d+)?\|ms/;
+                /disable_routes_responseTime_test\.noId:\d+(\.\d+)?\|ms/;
             let cursor = 0;
             t.context.statsd.on('metric', (buffer) => {
                 const metric = buffer.toString();
@@ -348,7 +348,7 @@ tap.test('disabling all default metrics', async (t) => {
                 namespace: 'disabling_all_metrics_test',
             },
             routes: {
-                timing: false,
+                responseTime: false,
                 hits: false,
                 errors: false,
             },

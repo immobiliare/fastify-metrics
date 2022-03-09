@@ -58,22 +58,21 @@ const DEFAULT_CONFIG_OPTIONS = {
         mode: 'static',
         prefix: '',
         /**
-         * Response time
-         * TODO: rename in responseTime
+         * Route hit counter
          */
-        timing: true,
-        /**
-         * Route response size
-         */
-        responseSize: false,
+        hits: true,
         /**
          * Route request size
          */
         requestSize: false,
         /**
-         * Route hit counter
+         * Response time
          */
-        hits: true,
+        responseTime: true,
+        /**
+         * Route response size
+         */
+        responseSize: false,
         /**
          * Route errors counter
          */
@@ -101,10 +100,10 @@ module.exports = fp(
         };
 
         for (const key of [
-            'timing',
-            'responseSize',
-            'requestSize',
             'hits',
+            'requestSize',
+            'responseTime',
+            'responseSize',
             'errors',
         ]) {
             if (typeof config.routes[key] !== 'boolean') {
@@ -229,7 +228,7 @@ module.exports = fp(
         if (config.routes.hits) {
             fastify.addHook('onRequest', hooks.onRequest);
         }
-        if (config.routes.timing) {
+        if (config.routes.responseTime) {
             fastify.addHook('onResponse', hooks.onResponse);
         }
         if (config.routes.errors) {

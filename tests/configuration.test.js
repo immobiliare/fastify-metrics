@@ -84,10 +84,10 @@ tap.test('invalid options', async (t) => {
         {
             value: {
                 routes: {
-                    timing: 'true',
+                    responseTime: 'true',
                 },
             },
-            message: '"timing" must be a boolean.',
+            message: '"responseTime" must be a boolean.',
         },
         {
             value: {

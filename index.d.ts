@@ -37,9 +37,9 @@ type GetStaticRouteLabel = (
 
 type CommonRouteOptions = {
     prefix?: string;
-    timing?: boolean;
     hits?: boolean;
     requestSize?: boolean;
+    responseTime?: boolean;
     responseSize?: boolean;
     errors?: boolean;
 };

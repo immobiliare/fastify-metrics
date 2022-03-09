@@ -45,7 +45,7 @@ fastify.register(require('@immobiliarelabs/fastify-metrics'), {
     sampleInterval: 1000,
     collect: {
         hits: true,
-        timings: true,
+        timing: true,
         errors: true,
         health: true,
     },
@@ -76,14 +76,14 @@ fastify.register(require('@immobiliarelabs/fastify-metrics'), {
 });
 ```
 
-#### `routes` metric
+#### `routes` metrics
 
 ```js
 const fastify = require('fastify')();
 
 fastify.register(require('@immobiliarelabs/fastify-metrics'), {
     routes: {
-        timings: true,
+        responseTime: true,
         hits: true,
         errors: true,
     },
