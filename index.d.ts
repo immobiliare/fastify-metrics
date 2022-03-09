@@ -39,6 +39,8 @@ type CommonRouteOptions = {
     prefix?: string;
     timing?: boolean;
     hits?: boolean;
+    requestSize?: boolean;
+    responseSize?: boolean;
     errors?: boolean;
 };
 
