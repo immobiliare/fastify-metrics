@@ -34,11 +34,7 @@ app.register(plugin, {
         host: `udp://127.0.0.1:${udpPort}`,
         namespace: 'nesting_upd_test',
     },
-    routes: {
-        timing: false,
-        hits: false,
-        errors: false,
-    },
+    routes: false
 });
 
 app.register(

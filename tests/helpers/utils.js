@@ -12,9 +12,6 @@ async function setupRoutes(opts, routes, mockClient = true) {
                   host: `udp://127.0.0.1:5454`,
               })
             : opts.client || {},
-        routes: {
-            ...(opts.routes || {}),
-        },
     };
     const app = fastify();
     app.register(plugin, pluginOpts);

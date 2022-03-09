@@ -90,7 +90,7 @@ function routesConfig(config, defaultConfig) {
     } else if (config === false) {
         return {
             ...defaultConfig,
-            timing: false,
+            responseTime: false,
             hits: false,
             errors: false,
         };
@@ -105,15 +105,12 @@ function routesConfig(config, defaultConfig) {
 module.exports = fp(
     async function (fastify, opts) {
         const { client = {}, routes, ...others } = opts;
-        if (opts.routes) {
-            if (
-                typeof opts.routes !== 'boolean' &&
-                typeof opts.routes !== 'object'
-            ) {
-                throw new Error(
-                    '"routes" must be a boolean or a config object.'
-                );
-            }
+        if (
+            opts.routes &&
+            typeof opts.routes !== 'boolean' &&
+            typeof opts.routes !== 'object'
+        ) {
+            throw new Error('"routes" must be a boolean or a config object.');
         }
         const { routes: defaultRoutes, ...defaultOthers } =
             DEFAULT_CONFIG_OPTIONS;

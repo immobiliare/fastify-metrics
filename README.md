@@ -282,7 +282,7 @@ This module exports a [plugin registration function](https://github.com/fastify/
 > The plugin is configured with an object with the following properties
 
 -   `client` <`Object`|`Client`> The statsd client [configuration](https://github.com/immobiliare/dats#new-clientoptions) object or a [`Client`](https://github.com/immobiliare/dats) instance. When using the options object, a default `onError` function is used to log with level `error` the event with the app logger.
--   `routes` <`Object`> Routes metrics configuration
+-   `routes` <`boolean`|`Object`> Routes metrics configuration. If set to `false` it disables the collection of all the default routes metrics.
     -   `mode` <`'static'`|`'dynamic'`> The [strategy](#routes-labels-generation-modes) to generate the route metric label.
     -   `prefix` <`string`> The prefix to use for the routes labels (`<METRICS_NAMESPACE>.<computedPrefix>.<routeId>.*`). It defaults to `''` (no prefix).
     -   `getLabel` <`Function`> A custom function to generate the route label. It has a different signature depending on the [mode](#routes-labels-generation-modes).
