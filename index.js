@@ -3,13 +3,32 @@
 const fp = require('fastify-plugin');
 const { default: Client } = require('@immobiliarelabs/dats');
 const doc = require('@dnlup/doc');
-const { hrtime2ns, hrtime2ms, hrtime2s } = require('@dnlup/hrtime-utils');
+const {
+    hrtime2us,
+    hrtime2ns,
+    hrtime2ms,
+    hrtime2s,
+} = require('@dnlup/hrtime-utils');
+const hooks = require('./lib/hooks');
+const staticMode = require('./lib/routes/static');
+const dynamicMode = require('./lib/routes/dynamic');
+const {
+    getRouteId,
+    normalizeFastifyPrefix,
+    normalizeRoutePrefix,
+    STATSD_METHODS,
+    isCustomClient,
+} = require('./lib/util');
+const { kMetricsLabel } = require('./lib/symbols');
+const decorateWithMethods = require('./lib/decorate');
 
 function clientMock() {
     const mock = {
-        socket: { onError: () => {} },
+        socket: {
+            onError: /* istanbul ignore next */ () => {},
+        },
     };
-    for (const method of ['on', 'counter', 'timing', 'gauge', 'set']) {
+    for (const method of STATSD_METHODS) {
         mock[method] = () => {};
     }
     mock.close = (done) => {
@@ -31,93 +50,132 @@ function sendHealthData(
     stats.gauge('process.cpu', cpu);
 }
 
-function onClose(instance, done) {
-    instance.stats.close(done);
-}
-
-function hitsCounter(request, reply, next) {
-    this.stats.counter(`api.${request.metrics.id}.requests`);
-    next();
-}
-
-function responseTiming(request, reply, next) {
-    this.stats.timing(
-        `api.${request.metrics.id}.response_time`,
-        reply.getResponseTime()
-    );
-    next();
-}
-
-function errorsCounter(request, reply, error, done) {
-    this.stats.counter(`api.${request.metrics.id}.errors.${reply.statusCode}`);
-    done();
-}
-
 /**
- * Default metrics that are enabled
+ * Default configuration for metrics collected.
  */
-const COLLECT = {
-    /**
-     * Response time
-     */
-    timing: true,
-    /**
-     * Route hit counter
-     */
-    hits: true,
-    /**
-     * Route errors counter
-     */
-    errors: true,
+const DEFAULT_CONFIG_OPTIONS = {
+    routes: {
+        mode: 'static',
+        prefix: '',
+        /**
+         * Route hit counter
+         */
+        hits: true,
+        /**
+         * Route request size
+         */
+        requestSize: false,
+        /**
+         * Response time
+         */
+        responseTime: true,
+        /**
+         * Route response size
+         */
+        responseSize: false,
+        /**
+         * Route errors counter
+         */
+        errors: true,
+    },
     /**
      * Health data
      */
     health: true,
 };
 
-module.exports = fp(
-    function (
-        fastify,
-        {
-            host,
-            namespace,
-            bufferSize,
-            bufferFlushTimeout,
-            sampleInterval,
-            udpDnsCache,
-            udpDnsCacheTTL,
-            collect = {},
-            onError = (error) => void fastify.log.error(error),
-        },
-        next
-    ) {
-        const enabledMetrics = Object.assign({}, COLLECT, collect);
+function routesConfig(config, defaultConfig) {
+    if (config === true) {
+        return defaultConfig;
+    } else if (config === false) {
+        return {
+            ...defaultConfig,
+            responseTime: false,
+            hits: false,
+            errors: false,
+        };
+    } else {
+        return {
+            ...defaultConfig,
+            ...config,
+        };
+    }
+}
 
-        for (const key of ['timing', 'hits', 'errors', 'health']) {
-            if (typeof enabledMetrics[key] !== 'boolean') {
-                return next(new Error(`"${key}" must be a Boolean.`));
+module.exports = fp(
+    async function (fastify, opts) {
+        const { client = {}, routes, ...others } = opts;
+        if (
+            opts.routes &&
+            typeof opts.routes !== 'boolean' &&
+            typeof opts.routes !== 'object'
+        ) {
+            throw new Error('"routes" must be a boolean or a config object.');
+        }
+        const { routes: defaultRoutes, ...defaultOthers } =
+            DEFAULT_CONFIG_OPTIONS;
+        const config = {
+            routes: routesConfig(routes, defaultRoutes),
+            ...defaultOthers,
+            ...others,
+        };
+
+        for (const key of [
+            'hits',
+            'requestSize',
+            'responseTime',
+            'responseSize',
+            'errors',
+        ]) {
+            if (typeof config.routes[key] !== 'boolean') {
+                throw new Error(`"routes.${key}" must be a boolean.`);
             }
         }
+        if (
+            (typeof config.health !== 'boolean' &&
+                typeof config.health !== 'object') ||
+            Array.isArray(config.health) ||
+            config.health === null
+        ) {
+            throw new Error(`"health" must be a boolean or an object.`);
+        }
+        const { prefix, mode } = config.routes;
+        if (typeof prefix !== 'string') {
+            throw new Error('"prefix" must be a string.');
+        }
+        if (prefix.startsWith('.') || prefix.endsWith('.')) {
+            config.routes.prefix = prefix.replace(/(^\.+|\.+$)/g, '');
+        }
+        if (mode !== 'static' && mode !== 'dynamic') {
+            throw new Error(
+                '"mode" must be one of these values: "static", "dynamic".'
+            );
+        }
 
-        const stats = host
-            ? new Client({
-                  host,
-                  namespace,
-                  bufferSize,
-                  bufferFlushTimeout,
-                  udpDnsCache,
-                  udpDnsCacheTTL,
-                  onError: onError,
-              })
-            : clientMock();
+        let stats;
+        if (isCustomClient(client)) {
+            for (const method of STATSD_METHODS) {
+                const fn = client[method];
+                if (!fn || typeof fn !== 'function')
+                    throw new Error(
+                        `client does not implement ${method} method.`
+                    );
+            }
+            stats = client;
+        } else {
+            const onError = (error) => void fastify.log.error(error);
+            stats = client.host
+                ? new Client({
+                      onError,
+                      ...client,
+                  })
+                : clientMock();
+        }
 
-        fastify.decorate('stats', stats);
-        fastify.decorate('hrtime2ns', hrtime2ns);
-        fastify.decorate('hrtime2ms', hrtime2ms);
-        fastify.decorate('hrtime2s', hrtime2s);
-
-        if (enabledMetrics.health) {
-            const sampler = doc({ sampleInterval });
+        let sampler;
+        if (config.health) {
+            sampler =
+                typeof config.health === 'object' ? doc(config.health) : doc();
             const onSample = function () {
                 sendHealthData(
                     {
@@ -133,37 +191,74 @@ module.exports = fp(
             sampler.on('sample', onSample);
         }
 
-        if (
-            enabledMetrics.timing ||
-            enabledMetrics.errors ||
-            enabledMetrics.hits
-        ) {
-            /**
-             * Assign a default route id if not defined in the reply
-             * config options.
-             * @see https://www.fastify.io/docs/latest/Routes/#config
-             */
+        await stats.connect();
+
+        const metrics = Object.freeze({
+            namespace:
+                typeof client.namespace === 'string' ? client.namespace : '',
+            routesPrefix: normalizeRoutePrefix(config.routes.prefix),
+            fastifyPrefix: normalizeFastifyPrefix(fastify.prefix),
+            client: stats,
+            sampler,
+            hrtime2us,
+            hrtime2ns,
+            hrtime2ms,
+            hrtime2s,
+        });
+        fastify.decorate('metrics', metrics);
+
+        fastify.addHook('onRoute', (options) => {
+            options.config = options.config || {};
+            options.config.metrics = options.config.metrics || {};
+            options.config.metrics.routeId = getRouteId(options.config);
+            options.config.metrics.fastifyPrefix = normalizeFastifyPrefix(
+                options.prefix
+            );
+            options.config.metrics.routesPrefix = metrics.routesPrefix;
+            options.config.metrics[kMetricsLabel] = '';
+        });
+        if (mode === 'dynamic') {
+            let getLabel = config.routes.getLabel || dynamicMode.getLabel;
+            if (typeof getLabel !== 'function') {
+                throw new Error('"getLabel" must be a function.');
+            }
+            fastify.decorateRequest(kMetricsLabel, '');
+            fastify.decorateReply(kMetricsLabel, '');
             fastify.addHook('onRequest', function (request, reply, next) {
-                request.metrics = {
-                    id: reply.context.config.routeId || 'noId',
-                };
+                const label = getLabel.call(this, request, reply);
+                request[kMetricsLabel] = label;
+                reply[kMetricsLabel] = label;
                 next();
+            });
+        } else {
+            const getLabel = config.routes.getLabel || staticMode.getLabel;
+            if (typeof getLabel !== 'function') {
+                throw new Error('"getLabel" must be a function.');
+            }
+            fastify.addHook('onRoute', (options) => {
+                options.config.metrics[kMetricsLabel] = getLabel(options);
             });
         }
 
-        fastify.addHook('onClose', onClose);
+        decorateWithMethods(fastify, mode, stats);
 
-        if (enabledMetrics.hits) {
-            fastify.addHook('onRequest', hitsCounter);
-        }
-        if (enabledMetrics.timing) {
-            fastify.addHook('onResponse', responseTiming);
-        }
-        if (enabledMetrics.errors) {
-            fastify.addHook('onError', errorsCounter);
-        }
+        fastify.addHook('onClose', hooks.onClose);
 
-        next();
+        if (config.routes.hits) {
+            fastify.addHook('onRequest', hooks.onRequest);
+        }
+        if (config.routes.responseTime) {
+            fastify.addHook('onResponse', hooks.onResponse);
+        }
+        if (config.routes.errors) {
+            fastify.addHook('onError', hooks.onError);
+        }
+        if (config.routes.requestSize) {
+            fastify.addHook('onRequest', hooks.onRequestSize);
+        }
+        if (config.routes.responseSize) {
+            fastify.addHook('onResponse', hooks.onResponseSize);
+        }
     },
     {
         name: '@immobiliarelabs/fastify-metrics',

@@ -1,28 +1,121 @@
-import { FastifyPluginCallback, FastifyPluginAsync } from 'fastify';
+import {
+    FastifyPluginCallback,
+    FastifyPluginAsync,
+    FastifyRequest,
+    FastifyReply,
+    FastifyInstance,
+    RouteOptions,
+} from 'fastify';
 
-import Client from '@immobiliarelabs/dats';
-import { Options } from '@immobiliarelabs/dats';
+import Client, { Options as ClientOptions } from '@immobiliarelabs/dats';
+import { Sampler } from '@dnlup/doc';
 
-export interface MetricsPluginOptions extends Options {
+type CustomClient = Pick<
+    Client,
+    'gauge' | 'counter' | 'timing' | 'set' | 'close' | 'connect'
+>;
+
+type GetDynamicRouteLabel = (
+    this: FastifyInstance,
+    request: FastifyRequest,
+    reply: FastifyReply
+) => string;
+type GetStaticRouteLabel = (
+    options: RouteOptions & {
+        routePath: string;
+        path: string;
+        prefix: string;
+        config: {
+            metrics: {
+                routeId: string;
+                fastifyPrefix: string;
+                routesPrefix: string;
+            };
+        };
+    }
+) => string;
+
+type CommonRouteOptions = {
+    prefix?: string;
+    hits?: boolean;
+    requestSize?: boolean;
+    responseTime?: boolean;
+    responseSize?: boolean;
+    errors?: boolean;
+};
+
+type DynamicMode = {
+    mode?: 'dynamic';
+    getLabel?: GetDynamicRouteLabel;
+} & CommonRouteOptions;
+
+type StaticMode = {
+    mode?: 'static';
+    getLabel?: GetStaticRouteLabel;
+} & CommonRouteOptions;
+
+type RoutesOptions = StaticMode | DynamicMode;
+
+type SamplerOptions = {
     sampleInterval?: number;
-    collect?: {
-        timing: boolean;
-        hits: boolean;
-        errors: boolean;
-        health: boolean;
+    eventLoopOptions?: {
+        resolution: number;
     };
+};
+
+type MetricsInstanceDecorator = {
+    namespace: string;
+    /** Normalized fastify prefix */
+    fastifyPrefix: string;
+    /** Normalized routes prefix */
+    routesPrefix: string;
+    client: Client;
+    sampler?: Sampler;
+    hrtime2us: (time: [number, number]) => number;
+    hrtime2ns: (time: [number, number]) => number;
+    hrtime2ms: (time: [number, number]) => number;
+    hrtime2s: (time: [number, number]) => number;
+};
+
+export interface MetricsPluginOptions {
+    client?: ClientOptions | CustomClient;
+    routes?: boolean | RoutesOptions;
+    health?: boolean | SamplerOptions;
 }
 
-export const trapsPluginCallback: FastifyPluginCallback<MetricsPluginOptions>;
-export const trapsPluginAsync: FastifyPluginAsync<MetricsPluginOptions>;
+export const MetricsPluginCallback: FastifyPluginCallback<MetricsPluginOptions>;
+export const MetricsPluginAsync: FastifyPluginAsync<MetricsPluginOptions>;
 
-export default trapsPluginCallback;
-
+export default MetricsPluginCallback;
 declare module 'fastify' {
     interface FastifyInstance {
-        stats: Client;
-        hrtime2ns: (time: [number, number]) => number;
-        hrtime2ms: (time: [number, number]) => number;
-        hrtime2s: (time: [number, number]) => number;
+        metrics: MetricsInstanceDecorator;
+    }
+
+    interface FastifyRequest {
+        sendTimingMetric: typeof Client.prototype.timing;
+        sendCounterMetric: typeof Client.prototype.counter;
+        sendGaugeMetric: typeof Client.prototype.gauge;
+        sendSetMetric: typeof Client.prototype.set;
+        getMetricLabel: () => string;
+    }
+
+    interface FastifyReply {
+        sendTimingMetric: typeof Client.prototype.timing;
+        sendCounterMetric: typeof Client.prototype.counter;
+        sendGaugeMetric: typeof Client.prototype.gauge;
+        sendSetMetric: typeof Client.prototype.set;
+        getMetricLabel: () => string;
+    }
+
+    interface FastifyContextConfig {
+        metrics: {
+            /** The id for this route that will be used for the label */
+            routeId: string;
+            /** Normalized fastify prefix for this route */
+            fastifyPrefix: string;
+            /** Normalized prefix of the routes */
+            routesPrefix: string;
+        };
     }
 }
