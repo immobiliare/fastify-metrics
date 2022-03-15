@@ -38,12 +38,24 @@ fastify.after((err) => {
     expectType<string>(fastify.metrics.fastifyPrefix);
     expectType<string>(fastify.metrics.routesPrefix);
 
+    fastify.get(
+        '/options',
+        {
+            config: {
+                metrics: {
+                    routeId: 'test',
+                },
+            },
+        },
+        () => {}
+    );
+
     fastify.get('/', async function (request, reply) {
         expectType<FastifyContextConfig>(request.context.config);
         expectType<{
             routeId: string;
-            fastifyPrefix: string;
-            routesPrefix: string;
+            fastifyPrefix?: string;
+            routesPrefix?: string;
         }>(request.context.config.metrics);
         expectType<string>(request.context.config.metrics.routeId);
         expectType<typeof Client.prototype.timing>(request.sendTimingMetric);
@@ -103,14 +115,20 @@ expectType(
             getLabel: function (request, reply) {
                 expectType<FastifyInstance>(this);
                 expectType<FastifyRequest>(request);
-                expectType<string>(
+                expectType<string | undefined>(
                     request.context.config.metrics.fastifyPrefix
                 );
-                expectType<string>(request.context.config.metrics.routesPrefix);
+                expectType<string | undefined>(
+                    request.context.config.metrics.routesPrefix
+                );
                 expectType<string>(request.context.config.metrics.routeId);
                 expectType<FastifyReply>(reply);
-                expectType<string>(reply.context.config.metrics.fastifyPrefix);
-                expectType<string>(reply.context.config.metrics.routesPrefix);
+                expectType<string | undefined>(
+                    reply.context.config.metrics.fastifyPrefix
+                );
+                expectType<string | undefined>(
+                    reply.context.config.metrics.routesPrefix
+                );
                 expectType<string>(reply.context.config.metrics.routeId);
                 return 'label';
             },
