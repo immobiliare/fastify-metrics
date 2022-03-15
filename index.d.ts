@@ -28,8 +28,8 @@ type GetStaticRouteLabel = (
         config: {
             metrics: {
                 routeId: string;
-                fastifyPrefix: string;
-                routesPrefix: string;
+                fastifyPrefix?: string;
+                routesPrefix?: string;
             };
         };
     }
@@ -113,9 +113,9 @@ declare module 'fastify' {
             /** The id for this route that will be used for the label */
             routeId: string;
             /** Normalized fastify prefix for this route */
-            fastifyPrefix: string;
+            fastifyPrefix?: string;
             /** Normalized prefix of the routes */
-            routesPrefix: string;
+            routesPrefix?: string;
         };
     }
 }
