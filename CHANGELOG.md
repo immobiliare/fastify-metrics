@@ -1,3 +1,10 @@
+## [2.0.1](https://github.com/immobiliare/fastify-metrics/compare/v2.0.0...v2.0.1) (2022-03-16)
+
+
+### Bug Fixes
+
+* fixed types ([7ed7133](https://github.com/immobiliare/fastify-metrics/commit/7ed7133df4ed03af81cbafc94de83580663d460b))
+
 # [2.0.0](https://github.com/immobiliare/fastify-metrics/compare/v1.0.0...v2.0.0) (2022-03-10)
 
 
