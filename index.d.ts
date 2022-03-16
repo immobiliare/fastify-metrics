@@ -20,6 +20,7 @@ type GetDynamicRouteLabel = (
     request: FastifyRequest,
     reply: FastifyReply
 ) => string;
+
 type GetStaticRouteLabel = (
     options: RouteOptions & {
         routePath: string;
@@ -54,8 +55,6 @@ type StaticMode = {
     getLabel?: GetStaticRouteLabel;
 } & CommonRouteOptions;
 
-type RoutesOptions = StaticMode | DynamicMode;
-
 type SamplerOptions = {
     sampleInterval?: number;
     eventLoopOptions?: {
@@ -79,9 +78,11 @@ type MetricsInstanceDecorator = {
 
 export interface MetricsPluginOptions {
     client?: ClientOptions | CustomClient;
-    routes?: boolean | RoutesOptions;
+    routes?: boolean | StaticMode | DynamicMode;
     health?: boolean | SamplerOptions;
 }
+
+export { ClientOptions, CustomClient, StaticMode, DynamicMode, SamplerOptions };
 
 export const MetricsPluginCallback: FastifyPluginCallback<MetricsPluginOptions>;
 export const MetricsPluginAsync: FastifyPluginAsync<MetricsPluginOptions>;
