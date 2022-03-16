@@ -1,3 +1,10 @@
+## [2.0.2](https://github.com/immobiliare/fastify-metrics/compare/v2.0.1...v2.0.2) (2022-03-16)
+
+
+### Bug Fixes
+
+* **types:** fix cannot cast MetricsPluginOptions properties to specific type ([956a4af](https://github.com/immobiliare/fastify-metrics/commit/956a4afcbf0532568f4f1924e2e4c8677f0acb45))
+
 ## [2.0.1](https://github.com/immobiliare/fastify-metrics/compare/v2.0.0...v2.0.1) (2022-03-16)
 
 
