@@ -30,10 +30,10 @@ jobs:
         steps:
             - uses: actions/setup-node@v3
               with:
-                  persist-credentials: false
                   node-version: 16
             - uses: actions/checkout@v3
               with:
+                  persist-credentials: false
                   token: ${{ secrets.GITHUB_TOKEN }}
 
             - name: Update NPM
