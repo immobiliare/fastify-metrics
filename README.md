@@ -153,7 +153,7 @@ These are the metrics that can be collected with their respective label.
 | `<METRICS_NAMESPACE>.<computedPrefix>.<routeId>.errors.<statusCode>` | `counter` | unit                            | errors count per service       |
 | `<METRICS_NAMESPACE>.<computedPrefix>.<routeId>.request_size`        | `timing`  | bytes                           | request size                   |
 | `<METRICS_NAMESPACE>.<computedPrefix>.<routeId>.response_time`       | `timing`  | milliseconds                    | response time                  |
-| `<METRICS_NAMESPACE>.<computedPrefix>.<routeId>.response_size`       | `timing`  | bytes                           | response time                  |
+| `<METRICS_NAMESPACE>.<computedPrefix>.<routeId>.response_size`       | `timing`  | bytes                           | response size                  |
 
 **To know more about how the `computedPrefix` and the route label are built see [here](#routes-labels-generation-modes)**.
 
