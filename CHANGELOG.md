@@ -1,3 +1,15 @@
+# [3.0.0](https://github.com/immobiliare/fastify-metrics/compare/v2.0.2...v3.0.0) (2022-05-10)
+
+
+### Features
+
+* update node ([a52b375](https://github.com/immobiliare/fastify-metrics/commit/a52b375587c0a6dc0b9420ac185fb19e997bdf4c))
+
+
+### BREAKING CHANGES
+
+* Node.js 12 is deprecated
+
 ## [2.0.2](https://github.com/immobiliare/fastify-metrics/compare/v2.0.1...v2.0.2) (2022-03-16)
 
 
