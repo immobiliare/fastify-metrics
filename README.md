@@ -14,7 +14,7 @@ If you write your services and apps using `Fastify` and also use `statsd`, this 
 
 It automatically collects Node.js process metrics along with routes stats like hit count, timings and errors and uses the [`Dats`](https://github.com/immobiliare/dats) client to send them to a `stasd` collector.
 
-It supports Fastify versions `>=3.0.0`.
+It supports Fastify versions `>=3.0.0` on Node.js `>=14.0.0`, if you are a Node.js `v12` user refer to `fastify-metrics@2.x.x`.
 
 ## Table of Content
 

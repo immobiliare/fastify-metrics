@@ -7,7 +7,7 @@ jobs:
         strategy:
             matrix:
                 os: [ubuntu-latest, macos-latest, windows-latest]
-                node-version: [12.x, 14.x, 16.x]
+                node-version: [14.x, 16.x, 18.x]
 
         runs-on: ${{ matrix.os }}
         steps:
@@ -18,9 +18,6 @@ jobs:
               with:
                   node-version: ${{ matrix.node-version }}
 
-            - name: Update NPM
-              run: npm i -g npm@8.3.1 # avoid npm@8.4 win32 bug
-
             - name: Install dependencies
               run: npm it
 
@@ -30,14 +27,11 @@ jobs:
         steps:
             - uses: actions/setup-node@v3
               with:
-                  node-version: 16
+                  node-version: lts/*
             - uses: actions/checkout@v3
               with:
                   persist-credentials: false
                   token: ${{ secrets.GITHUB_TOKEN }}
-
-            - name: Update NPM
-              run: npm i -g npm@8.3.1 # avoid npm@8.4 win32 bug
 
             - name: Install dependencies
               run: npm i
