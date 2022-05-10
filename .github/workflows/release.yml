@@ -30,8 +30,8 @@ jobs:
                   node-version: lts/*
             - uses: actions/checkout@v3
               with:
+                  token: ${{ secrets.GH_OWNER_TOKEN }}
                   persist-credentials: false
-                  token: ${{ secrets.GITHUB_TOKEN }}
 
             - name: Install dependencies
               run: npm i
