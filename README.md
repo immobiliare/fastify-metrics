@@ -14,7 +14,7 @@ If you write your services and apps using `Fastify` and also use `statsd`, this 
 
 It automatically collects Node.js process metrics along with routes stats like hit count, timings and errors and uses the [`Dats`](https://github.com/immobiliare/dats) client to send them to a `stasd` collector.
 
-It supports Fastify versions `>=3.0.0`.
+It supports Fastify versions `>=3.0.0` on Node.js `>=14.0.0`, if you are a Node.js `v12` user refer to `fastify-metrics@2.x.x`.
 
 ## Table of Content
 
@@ -153,7 +153,7 @@ These are the metrics that can be collected with their respective label.
 | `<METRICS_NAMESPACE>.<computedPrefix>.<routeId>.errors.<statusCode>` | `counter` | unit                            | errors count per service       |
 | `<METRICS_NAMESPACE>.<computedPrefix>.<routeId>.request_size`        | `timing`  | bytes                           | request size                   |
 | `<METRICS_NAMESPACE>.<computedPrefix>.<routeId>.response_time`       | `timing`  | milliseconds                    | response time                  |
-| `<METRICS_NAMESPACE>.<computedPrefix>.<routeId>.response_size`       | `timing`  | bytes                           | response time                  |
+| `<METRICS_NAMESPACE>.<computedPrefix>.<routeId>.response_size`       | `timing`  | bytes                           | response size                  |
 
 **To know more about how the `computedPrefix` and the route label are built see [here](#routes-labels-generation-modes)**.
 
