@@ -1,3 +1,10 @@
+## [3.0.1](https://github.com/immobiliare/fastify-metrics/compare/v3.0.0...v3.0.1) (2022-06-21)
+
+
+### Bug Fixes
+
+* skip getLabel on 404 ([37b6e2e](https://github.com/immobiliare/fastify-metrics/commit/37b6e2ece186bf3ccbe9e8147079c69105488f61))
+
 # [3.0.0](https://github.com/immobiliare/fastify-metrics/compare/v2.0.2...v3.0.0) (2022-05-10)
 
 
