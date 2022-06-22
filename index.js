@@ -225,8 +225,6 @@ module.exports = fp(
             fastify.decorateRequest(kMetricsLabel, '');
             fastify.decorateReply(kMetricsLabel, '');
             fastify.addHook('onRequest', function (request, reply, next) {
-                // For some reason, this request.is404 is false on 404s only in tests.
-                /* istanbul ignore next */
                 const label = request.is404
                     ? ''
                     : getLabel.call(this, request, reply);
