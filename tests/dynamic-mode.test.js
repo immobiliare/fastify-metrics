@@ -418,6 +418,9 @@ tap.test('404 test', async (t) => {
             client: {
                 namespace: '404_dynamic_mode_errors',
             },
+            routes: {
+                mode: 'dynamic',
+            },
             health: false,
         },
         undefined,
