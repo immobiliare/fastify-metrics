@@ -14,7 +14,7 @@ async function setupRoutes(opts, routes, mockClient = true) {
             : opts.client || {},
     };
     const app = fastify();
-    app.register(plugin, pluginOpts);
+    await app.register(plugin, pluginOpts);
 
     addRoutes(app, routes);
     await app.ready();
