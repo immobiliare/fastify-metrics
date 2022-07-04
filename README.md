@@ -20,46 +20,46 @@ It supports Fastify versions `>=3.0.0` on Node.js `>=14.0.0`, if you are a Node.
 
 <!-- toc -->
 
--   [Installation](#installation)
-    -   [`npm`](#npm)
-    -   [`yarn`](#yarn)
--   [Migrating from version 1](#migrating-from-version-1)
--   [Usage](#usage)
--   [Route Configuration](#route-configuration)
-    -   [Note](#note)
--   [Metrics collected](#metrics-collected)
--   [Decorators](#decorators)
-    -   [Fastify decorators](#fastify-decorators)
-        -   [`metrics`](#metrics)
-            -   [`metrics.namespace`](#metricsnamespace)
-            -   [`metrics.fastifyPrefix`](#metricsfastifyprefix)
-            -   [`metrics.routesPrefix`](#metricsroutesprefix)
-            -   [`metrics.client`](#metricsclient)
-            -   [`metrics.sampler`](#metricssampler)
-            -   [`metrics.hrtime2us`](#metricshrtime2us)
-            -   [`metrics.hrtime2ns`](#metricshrtime2ns)
-            -   [`metrics.hrtime2ms`](#metricshrtime2ms)
-            -   [`metrics.hrtime2s`](#metricshrtime2s)
-    -   [Request and Reply decorators](#request-and-reply-decorators)
-        -   [`getMetricLabel()`](#getmetriclabel)
-        -   [`sendTimingMetric(name[, value])`](#sendtimingmetricname-value)
-        -   [`sendCounterMetric(name[, value])`](#sendcountermetricname-value)
-        -   [`sendGaugeMetric(name, value)`](#sendgaugemetricname-value)
-        -   [`sendSetMetric(name, value)`](#sendsetmetricname-value)
--   [Hooks](#hooks)
--   [Request and Reply context](#request-and-reply-context)
--   [API](#api)
-    -   [Configuration `options`](#configuration-options)
-    -   [Routes labels generation modes](#routes-labels-generation-modes)
-        -   [computedPrefix](#computedprefix)
-        *   [`static` mode](#static-mode)
-            -   [`getLabel(options)`](#getlabeloptions)
-        *   [`dynamic` mode](#dynamic-mode)
-            -   [`getLabel(request, reply)`](#getlabelrequest-reply)
-            -   [Example](#example)
--   [Powered Apps](#powered-apps)
--   [Support & Contribute](#support--contribute)
--   [License](#license)
+- [Installation](#installation)
+  * [`npm`](#npm)
+  * [`yarn`](#yarn)
+- [Migrating from version 1](#migrating-from-version-1)
+- [Usage](#usage)
+- [Route Configuration](#route-configuration)
+  * [Note](#note)
+- [Metrics collected](#metrics-collected)
+- [Decorators](#decorators)
+  * [Fastify decorators](#fastify-decorators)
+    + [`metrics`](#metrics)
+      - [`metrics.namespace`](#metricsnamespace)
+      - [`metrics.fastifyPrefix`](#metricsfastifyprefix)
+      - [`metrics.routesPrefix`](#metricsroutesprefix)
+      - [`metrics.client`](#metricsclient)
+      - [`metrics.sampler`](#metricssampler)
+      - [`metrics.hrtime2us`](#metricshrtime2us)
+      - [`metrics.hrtime2ns`](#metricshrtime2ns)
+      - [`metrics.hrtime2ms`](#metricshrtime2ms)
+      - [`metrics.hrtime2s`](#metricshrtime2s)
+  * [Request and Reply decorators](#request-and-reply-decorators)
+    + [`getMetricLabel()`](#getmetriclabel)
+    + [`sendTimingMetric(name[, value])`](#sendtimingmetricname-value)
+    + [`sendCounterMetric(name[, value])`](#sendcountermetricname-value)
+    + [`sendGaugeMetric(name, value)`](#sendgaugemetricname-value)
+    + [`sendSetMetric(name, value)`](#sendsetmetricname-value)
+- [Hooks](#hooks)
+- [Request and Reply context](#request-and-reply-context)
+- [API](#api)
+  * [Configuration `options`](#configuration-options)
+  * [Routes labels generation modes](#routes-labels-generation-modes)
+      - [computedPrefix](#computedprefix)
+    + [`static` mode](#static-mode)
+      - [`getLabel(options)`](#getlabeloptions)
+    + [`dynamic` mode](#dynamic-mode)
+      - [`getLabel(request, reply)`](#getlabelrequest-reply)
+      - [Example](#example)
+- [Powered Apps](#powered-apps)
+- [Support & Contribute](#support--contribute)
+- [License](#license)
 
 <!-- tocstop -->
 
@@ -92,7 +92,7 @@ See the [migration guide](./MIGRATION_GUIDE.md) if you have to migrate from the 
 ```js
 const fastify = require('fastify')();
 
-fastify.register(require('@immobiliarelabs/fastify-metrics'), {
+await fastify.register(require('@immobiliarelabs/fastify-metrics'), {
     client: {
         host: 'udp://someip:someport',
         namespace: 'ns',
@@ -360,7 +360,7 @@ If you don't pass your custom function, the default one returns the same string 
 ```js
 const fastify = require('fastify')();
 
-fastify.register(require('@immobiliarelabs/fastify-metrics'), {
+await fastify.register(require('@immobiliarelabs/fastify-metrics'), {
     client: {
         host: 'udp://someip:someport',
         namespace: 'ns',
