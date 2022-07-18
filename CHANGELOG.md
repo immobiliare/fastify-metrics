@@ -1,3 +1,15 @@
+# [4.0.0](https://github.com/immobiliare/fastify-metrics/compare/v3.0.1...v4.0.0) (2022-07-18)
+
+
+### Features
+
+* **fastify:** updates framework and plugin to 4.x ([6dfa740](https://github.com/immobiliare/fastify-metrics/commit/6dfa74012365fe0507b3a79a6cb89650931beb9d))
+
+
+### BREAKING CHANGES
+
+* **fastify:** fastify major update
+
 ## [3.0.1](https://github.com/immobiliare/fastify-metrics/compare/v3.0.0...v3.0.1) (2022-06-21)
 
 
