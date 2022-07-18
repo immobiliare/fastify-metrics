@@ -69,8 +69,8 @@ It automatically collects Node.js process metrics along with routes stats like h
 
 | `Node.js` | `fastify` | `@immobiliarelabs/fastify-metrics` |
 | --------- | --------- | ---------------------------------- |
-| `<14`     | `3`       | `2`                                |
-| `>14`     | `4`       | `3`                                |
+| `<14`     | `3`       | `3`                                |
+| `>14`     | `4`       | `4`                                |
 
 ## Installation
 
