@@ -14,54 +14,63 @@ If you write your services and apps using `Fastify` and also use `statsd`, this 
 
 It automatically collects Node.js process metrics along with routes stats like hit count, timings and errors and uses the [`Dats`](https://github.com/immobiliare/dats) client to send them to a `stasd` collector.
 
-It supports Fastify versions `>=3.0.0` on Node.js `>=14.0.0`, if you are a Node.js `v12` user refer to `fastify-metrics@2.x.x`.
+> ⚠️ Fastify 4 introduced some breaking changes, please refer to [this](#fastify-version-support) version support table to find what works best for you!
 
 ## Table of Content
 
 <!-- toc -->
 
-- [Installation](#installation)
-  * [`npm`](#npm)
-  * [`yarn`](#yarn)
-- [Migrating from version 1](#migrating-from-version-1)
-- [Usage](#usage)
-- [Route Configuration](#route-configuration)
-  * [Note](#note)
-- [Metrics collected](#metrics-collected)
-- [Decorators](#decorators)
-  * [Fastify decorators](#fastify-decorators)
-    + [`metrics`](#metrics)
-      - [`metrics.namespace`](#metricsnamespace)
-      - [`metrics.fastifyPrefix`](#metricsfastifyprefix)
-      - [`metrics.routesPrefix`](#metricsroutesprefix)
-      - [`metrics.client`](#metricsclient)
-      - [`metrics.sampler`](#metricssampler)
-      - [`metrics.hrtime2us`](#metricshrtime2us)
-      - [`metrics.hrtime2ns`](#metricshrtime2ns)
-      - [`metrics.hrtime2ms`](#metricshrtime2ms)
-      - [`metrics.hrtime2s`](#metricshrtime2s)
-  * [Request and Reply decorators](#request-and-reply-decorators)
-    + [`getMetricLabel()`](#getmetriclabel)
-    + [`sendTimingMetric(name[, value])`](#sendtimingmetricname-value)
-    + [`sendCounterMetric(name[, value])`](#sendcountermetricname-value)
-    + [`sendGaugeMetric(name, value)`](#sendgaugemetricname-value)
-    + [`sendSetMetric(name, value)`](#sendsetmetricname-value)
-- [Hooks](#hooks)
-- [Request and Reply context](#request-and-reply-context)
-- [API](#api)
-  * [Configuration `options`](#configuration-options)
-  * [Routes labels generation modes](#routes-labels-generation-modes)
-      - [computedPrefix](#computedprefix)
-    + [`static` mode](#static-mode)
-      - [`getLabel(options)`](#getlabeloptions)
-    + [`dynamic` mode](#dynamic-mode)
-      - [`getLabel(request, reply)`](#getlabelrequest-reply)
-      - [Example](#example)
-- [Powered Apps](#powered-apps)
-- [Support & Contribute](#support--contribute)
-- [License](#license)
+-   [Fastify Version Support](#fastify-version-support)
+
+*   [Installation](#installation)
+    -   [`npm`](#npm)
+    -   [`yarn`](#yarn)
+*   [Migrating from version 1](#migrating-from-version-1)
+*   [Usage](#usage)
+*   [Route Configuration](#route-configuration)
+    -   [Note](#note)
+*   [Metrics collected](#metrics-collected)
+*   [Decorators](#decorators)
+    -   [Fastify decorators](#fastify-decorators)
+        -   [`metrics`](#metrics)
+            -   [`metrics.namespace`](#metricsnamespace)
+            -   [`metrics.fastifyPrefix`](#metricsfastifyprefix)
+            -   [`metrics.routesPrefix`](#metricsroutesprefix)
+            -   [`metrics.client`](#metricsclient)
+            -   [`metrics.sampler`](#metricssampler)
+            -   [`metrics.hrtime2us`](#metricshrtime2us)
+            -   [`metrics.hrtime2ns`](#metricshrtime2ns)
+            -   [`metrics.hrtime2ms`](#metricshrtime2ms)
+            -   [`metrics.hrtime2s`](#metricshrtime2s)
+    -   [Request and Reply decorators](#request-and-reply-decorators)
+        -   [`getMetricLabel()`](#getmetriclabel)
+        -   [`sendTimingMetric(name[, value])`](#sendtimingmetricname-value)
+        -   [`sendCounterMetric(name[, value])`](#sendcountermetricname-value)
+        -   [`sendGaugeMetric(name, value)`](#sendgaugemetricname-value)
+        -   [`sendSetMetric(name, value)`](#sendsetmetricname-value)
+*   [Hooks](#hooks)
+*   [Request and Reply context](#request-and-reply-context)
+*   [API](#api)
+    -   [Configuration `options`](#configuration-options)
+    -   [Routes labels generation modes](#routes-labels-generation-modes)
+        -   [computedPrefix](#computedprefix)
+        *   [`static` mode](#static-mode)
+            -   [`getLabel(options)`](#getlabeloptions)
+        *   [`dynamic` mode](#dynamic-mode)
+            -   [`getLabel(request, reply)`](#getlabelrequest-reply)
+            -   [Example](#example)
+*   [Powered Apps](#powered-apps)
+*   [Support & Contribute](#support--contribute)
+*   [License](#license)
 
 <!-- tocstop -->
+
+### Fastify Version Support
+
+| `Node.js` | `fastify` | `@immobiliarelabs/fastify-metrics` |
+| --------- | --------- | ---------------------------------- |
+| `<14`     | `3`       | `2`                                |
+| `>14`     | `4`       | `3`                                |
 
 ## Installation
 

@@ -264,6 +264,6 @@ module.exports = fp(
     },
     {
         name: '@immobiliarelabs/fastify-metrics',
-        fastify: '>=3.x',
+        fastify: '>=4.x',
     }
 );
