@@ -14,21 +14,23 @@ If you write your services and apps using `Fastify` and also use `statsd`, this 
 
 It automatically collects Node.js process metrics along with routes stats like hit count, timings and errors and uses the [`Dats`](https://github.com/immobiliare/dats) client to send them to a `stasd` collector.
 
-It supports Fastify versions `>=3.0.0` on Node.js `>=14.0.0`, if you are a Node.js `v12` user refer to `fastify-metrics@2.x.x`.
+> ⚠️ Fastify 4 introduced some breaking changes, please refer to [this](#fastify-version-support) version support table to find what works best for you!
 
 ## Table of Content
 
 <!-- toc -->
 
--   [Installation](#installation)
+-   [Fastify Version Support](#fastify-version-support)
+
+*   [Installation](#installation)
     -   [`npm`](#npm)
     -   [`yarn`](#yarn)
--   [Migrating from version 1](#migrating-from-version-1)
--   [Usage](#usage)
--   [Route Configuration](#route-configuration)
+*   [Migrating from version 1](#migrating-from-version-1)
+*   [Usage](#usage)
+*   [Route Configuration](#route-configuration)
     -   [Note](#note)
--   [Metrics collected](#metrics-collected)
--   [Decorators](#decorators)
+*   [Metrics collected](#metrics-collected)
+*   [Decorators](#decorators)
     -   [Fastify decorators](#fastify-decorators)
         -   [`metrics`](#metrics)
             -   [`metrics.namespace`](#metricsnamespace)
@@ -46,9 +48,9 @@ It supports Fastify versions `>=3.0.0` on Node.js `>=14.0.0`, if you are a Node.
         -   [`sendCounterMetric(name[, value])`](#sendcountermetricname-value)
         -   [`sendGaugeMetric(name, value)`](#sendgaugemetricname-value)
         -   [`sendSetMetric(name, value)`](#sendsetmetricname-value)
--   [Hooks](#hooks)
--   [Request and Reply context](#request-and-reply-context)
--   [API](#api)
+*   [Hooks](#hooks)
+*   [Request and Reply context](#request-and-reply-context)
+*   [API](#api)
     -   [Configuration `options`](#configuration-options)
     -   [Routes labels generation modes](#routes-labels-generation-modes)
         -   [computedPrefix](#computedprefix)
@@ -57,11 +59,18 @@ It supports Fastify versions `>=3.0.0` on Node.js `>=14.0.0`, if you are a Node.
         *   [`dynamic` mode](#dynamic-mode)
             -   [`getLabel(request, reply)`](#getlabelrequest-reply)
             -   [Example](#example)
--   [Powered Apps](#powered-apps)
--   [Support & Contribute](#support--contribute)
--   [License](#license)
+*   [Powered Apps](#powered-apps)
+*   [Support & Contribute](#support--contribute)
+*   [License](#license)
 
 <!-- tocstop -->
+
+### Fastify Version Support
+
+| `Node.js` | `fastify` | `@immobiliarelabs/fastify-metrics` |
+| --------- | --------- | ---------------------------------- |
+| `<14`     | `3`       | `2`                                |
+| `>14`     | `4`       | `3`                                |
 
 ## Installation
 
@@ -92,7 +101,7 @@ See the [migration guide](./MIGRATION_GUIDE.md) if you have to migrate from the 
 ```js
 const fastify = require('fastify')();
 
-fastify.register(require('@immobiliarelabs/fastify-metrics'), {
+await fastify.register(require('@immobiliarelabs/fastify-metrics'), {
     client: {
         host: 'udp://someip:someport',
         namespace: 'ns',
@@ -360,7 +369,7 @@ If you don't pass your custom function, the default one returns the same string 
 ```js
 const fastify = require('fastify')();
 
-fastify.register(require('@immobiliarelabs/fastify-metrics'), {
+await fastify.register(require('@immobiliarelabs/fastify-metrics'), {
     client: {
         host: 'udp://someip:someport',
         namespace: 'ns',

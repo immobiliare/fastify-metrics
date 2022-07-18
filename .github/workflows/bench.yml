@@ -1,4 +1,5 @@
 name: Benchmarks
+
 on:
     - push
     - pull_request
@@ -17,7 +18,8 @@ jobs:
               uses: actions/setup-node@v3
               with:
                   node-version: lts/*
-            - run: npm i
+            - name: Install dependencies
+              run: npm i
             - name: Run Benchmark
               run: npm run bench
 
@@ -33,6 +35,7 @@ jobs:
               uses: actions/setup-node@v3
               with:
                   node-version: lts/*
-            - run: npm i
+            - name: Install dependencies
+              run: npm i
             - name: Run Benchmark
               run: npm run bench
