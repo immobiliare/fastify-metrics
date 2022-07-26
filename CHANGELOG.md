@@ -1,3 +1,25 @@
+## [4.0.1](https://github.com/immobiliare/fastify-metrics/compare/v4.0.0...v4.0.1) (2022-07-26)
+
+### Bug Fixes
+
+-   docs with wrong version table ([effc04f](https://github.com/immobiliare/fastify-metrics/commit/effc04fc20b5d10052ebc1cfa44e187bfa68bbb3))
+
+# [4.0.0](https://github.com/immobiliare/fastify-metrics/compare/v3.0.1...v4.0.0) (2022-07-18)
+
+### Features
+
+-   **fastify:** updates framework and plugin to 4.x ([6dfa740](https://github.com/immobiliare/fastify-metrics/commit/6dfa74012365fe0507b3a79a6cb89650931beb9d))
+
+### BREAKING CHANGES
+
+-   **fastify:** fastify major update
+
+## [3.0.1](https://github.com/immobiliare/fastify-metrics/compare/v3.0.0...v3.0.1) (2022-06-21)
+
+### Bug Fixes
+
+-   skip getLabel on 404 ([37b6e2e](https://github.com/immobiliare/fastify-metrics/commit/37b6e2ece186bf3ccbe9e8147079c69105488f61))
+
 # [3.0.0](https://github.com/immobiliare/fastify-metrics/compare/v2.0.2...v3.0.0) (2022-05-10)
 
 ### Features

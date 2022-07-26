@@ -225,7 +225,9 @@ module.exports = fp(
             fastify.decorateRequest(kMetricsLabel, '');
             fastify.decorateReply(kMetricsLabel, '');
             fastify.addHook('onRequest', function (request, reply, next) {
-                const label = getLabel.call(this, request, reply);
+                const label = request.is404
+                    ? ''
+                    : getLabel.call(this, request, reply);
                 request[kMetricsLabel] = label;
                 reply[kMetricsLabel] = label;
                 next();
@@ -262,6 +264,6 @@ module.exports = fp(
     },
     {
         name: '@immobiliarelabs/fastify-metrics',
-        fastify: '3.x',
+        fastify: '>=4.x',
     }
 );

@@ -410,25 +410,28 @@ tap.test('custom getLabel and custom prefix', async (t) => {
         app,
         t
     );
+});
 
-    tap.test('404 test', async (t) => {
-        const server = await setup(
-            {
-                client: {
-                    namespace: '404_dynamic_mode_errors',
-                },
-                health: false,
+tap.test('404 test', async (t) => {
+    const server = await setup(
+        {
+            client: {
+                namespace: '404_dynamic_mode_errors',
             },
-            undefined,
-            t
-        );
-        t.teardown(async () => {
-            return server.close();
-        });
-        const response = await server.inject({
-            method: 'GET',
-            url: '/not-existing',
-        });
-        t.equal(404, response.statusCode);
+            routes: {
+                mode: 'dynamic',
+            },
+            health: false,
+        },
+        undefined,
+        t
+    );
+    t.teardown(async () => {
+        return server.close();
     });
+    const response = await server.inject({
+        method: 'GET',
+        url: '/not-existingasdfasdfasdfasdfasdfasdfasd',
+    });
+    t.equal(404, response.statusCode);
 });
