@@ -1,3 +1,10 @@
+## [4.0.1](https://github.com/immobiliare/fastify-metrics/compare/v4.0.0...v4.0.1) (2022-07-26)
+
+
+### Bug Fixes
+
+* docs with wrong version table ([effc04f](https://github.com/immobiliare/fastify-metrics/commit/effc04fc20b5d10052ebc1cfa44e187bfa68bbb3))
+
 # [4.0.0](https://github.com/immobiliare/fastify-metrics/compare/v3.0.1...v4.0.0) (2022-07-18)
 
 
