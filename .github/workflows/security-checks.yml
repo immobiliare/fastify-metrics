@@ -11,6 +11,9 @@ jobs:
               uses: actions/setup-node@v3
               with:
                   node-version: lts/*
+            
+            - run: npm i
+
             - name: Run Snyk to check for vulnerabilities
               uses: snyk/actions/node@master
               env:
