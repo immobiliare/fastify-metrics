@@ -1,3 +1,42 @@
+<!-- toc -->
+
+-   [Migrating from v4 to v5](#migrating-from-v4-to-v5)
+    -   [`.context.config.metrics` access](#contextconfigmetrics-access)
+        -   [V4](#v4)
+        -   [V5](#v5)
+-   [Migrating from v1 to v2](#migrating-from-v1-to-v2)
+    -   [`Dats` client options](#dats-client-options)
+        -   [V1](#v1)
+        -   [V2](#v2)
+    -   [Metrics collections setup](#metrics-collections-setup)
+        -   [V1](#v1-1)
+        -   [V2](#v2-1)
+            -   [`health` metric](#health-metric)
+            -   [`routes` metrics](#routes-metrics)
+    -   [Route id configuration](#route-id-configuration)
+        -   [V1](#v1-2)
+        -   [V2](#v2-2)
+
+<!-- tocstop -->
+
+# Migrating from v4 to v5
+
+## `<Request|Reply>.context.config.metrics` access
+
+### V4
+
+```js
+const metrics = request.context.config.metrics;
+const metrics = reply.context.config.metrics;
+```
+
+### V5
+
+```js
+const metrics = request.routeConfig.metrics;
+const metrics = reply.request.routeConfig.metrics;
+```
+
 # Migrating from v1 to v2
 
 ## `Dats` client options
