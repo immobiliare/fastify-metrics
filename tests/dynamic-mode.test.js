@@ -195,20 +195,14 @@ tap.test('custom getLabel', async (t) => {
                 getLabel: function (request, reply) {
                     t.ok(typeof this.prefix === 'string');
                     t.ok(typeof this.metrics.routesPrefix === 'string');
-                    for (const r of [request, reply]) {
-                        t.ok(typeof r.context.config.metrics === 'object');
-                        t.equal(
-                            'string',
-                            typeof r.context.config.metrics.routeId
-                        );
-                        t.equal(
-                            'string',
-                            typeof r.context.config.metrics.fastifyPrefix
-                        );
-                        t.equal(
-                            'string',
-                            typeof r.context.config.metrics.routesPrefix
-                        );
+                    for (const r of [
+                        request.routeConfig,
+                        reply.request.routeConfig,
+                    ]) {
+                        t.ok(typeof r.metrics === 'object');
+                        t.equal('string', typeof r.metrics.routeId);
+                        t.equal('string', typeof r.metrics.fastifyPrefix);
+                        t.equal('string', typeof r.metrics.routesPrefix);
                     }
                     return 'customLabel';
                 },
@@ -309,20 +303,14 @@ tap.test('custom getLabel and custom prefix', async (t) => {
                 getLabel: function (request, reply) {
                     t.ok(typeof this.prefix === 'string');
                     t.ok(this.metrics.routesPrefix === 'prefix');
-                    for (const r of [request, reply]) {
-                        t.ok(typeof r.context.config.metrics === 'object');
-                        t.equal(
-                            'string',
-                            typeof r.context.config.metrics.routeId
-                        );
-                        t.equal(
-                            'string',
-                            typeof r.context.config.metrics.fastifyPrefix
-                        );
-                        t.equal(
-                            'string',
-                            typeof r.context.config.metrics.routesPrefix
-                        );
+                    for (const r of [
+                        request.routeConfig,
+                        reply.request.routeConfig,
+                    ]) {
+                        t.ok(typeof r.metrics === 'object');
+                        t.equal('string', typeof r.metrics.routeId);
+                        t.equal('string', typeof r.metrics.fastifyPrefix);
+                        t.equal('string', typeof r.metrics.routesPrefix);
                     }
                     return 'customLabel';
                 },

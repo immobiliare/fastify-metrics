@@ -20,47 +20,48 @@ It automatically collects Node.js process metrics along with routes stats like h
 
 <!-- toc -->
 
-  * [Fastify Version Support](#fastify-version-support)
-- [Installation](#installation)
-  * [`npm`](#npm)
-  * [`yarn`](#yarn)
-- [Migrating from version 1](#migrating-from-version-1)
-- [Usage](#usage)
-- [Route Configuration](#route-configuration)
-  * [Note](#note)
-- [Metrics collected](#metrics-collected)
-- [Decorators](#decorators)
-  * [Fastify decorators](#fastify-decorators)
-    + [`metrics`](#metrics)
-      - [`metrics.namespace`](#metricsnamespace)
-      - [`metrics.fastifyPrefix`](#metricsfastifyprefix)
-      - [`metrics.routesPrefix`](#metricsroutesprefix)
-      - [`metrics.client`](#metricsclient)
-      - [`metrics.sampler`](#metricssampler)
-      - [`metrics.hrtime2us`](#metricshrtime2us)
-      - [`metrics.hrtime2ns`](#metricshrtime2ns)
-      - [`metrics.hrtime2ms`](#metricshrtime2ms)
-      - [`metrics.hrtime2s`](#metricshrtime2s)
-  * [Request and Reply decorators](#request-and-reply-decorators)
-    + [`getMetricLabel()`](#getmetriclabel)
-    + [`sendTimingMetric(name[, value])`](#sendtimingmetricname-value)
-    + [`sendCounterMetric(name[, value])`](#sendcountermetricname-value)
-    + [`sendGaugeMetric(name, value)`](#sendgaugemetricname-value)
-    + [`sendSetMetric(name, value)`](#sendsetmetricname-value)
-- [Hooks](#hooks)
-- [Request and Reply context](#request-and-reply-context)
-- [API](#api)
-  * [Configuration `options`](#configuration-options)
-  * [Routes labels generation modes](#routes-labels-generation-modes)
-      - [computedPrefix](#computedprefix)
-    + [`static` mode](#static-mode)
-      - [`getLabel(options)`](#getlabeloptions)
-    + [`dynamic` mode](#dynamic-mode)
-      - [`getLabel(request, reply)`](#getlabelrequest-reply)
-      - [Example](#example)
-- [Powered Apps](#powered-apps)
-- [Support & Contribute](#support--contribute)
-- [License](#license)
+-   [Fastify Version Support](#fastify-version-support)
+
+*   [Installation](#installation)
+    -   [`npm`](#npm)
+    -   [`yarn`](#yarn)
+*   [Migrating from version 1](#migrating-from-version-1)
+*   [Usage](#usage)
+*   [Route Configuration](#route-configuration)
+    -   [Note](#note)
+*   [Metrics collected](#metrics-collected)
+*   [Decorators](#decorators)
+    -   [Fastify decorators](#fastify-decorators)
+        -   [`metrics`](#metrics)
+            -   [`metrics.namespace`](#metricsnamespace)
+            -   [`metrics.fastifyPrefix`](#metricsfastifyprefix)
+            -   [`metrics.routesPrefix`](#metricsroutesprefix)
+            -   [`metrics.client`](#metricsclient)
+            -   [`metrics.sampler`](#metricssampler)
+            -   [`metrics.hrtime2us`](#metricshrtime2us)
+            -   [`metrics.hrtime2ns`](#metricshrtime2ns)
+            -   [`metrics.hrtime2ms`](#metricshrtime2ms)
+            -   [`metrics.hrtime2s`](#metricshrtime2s)
+    -   [Request and Reply decorators](#request-and-reply-decorators)
+        -   [`getMetricLabel()`](#getmetriclabel)
+        -   [`sendTimingMetric(name[, value])`](#sendtimingmetricname-value)
+        -   [`sendCounterMetric(name[, value])`](#sendcountermetricname-value)
+        -   [`sendGaugeMetric(name, value)`](#sendgaugemetricname-value)
+        -   [`sendSetMetric(name, value)`](#sendsetmetricname-value)
+*   [Hooks](#hooks)
+*   [Request and Reply routeConfig](#request-and-reply-routeconfig)
+*   [API](#api)
+    -   [Configuration `options`](#configuration-options)
+    -   [Routes labels generation modes](#routes-labels-generation-modes)
+        -   [computedPrefix](#computedprefix)
+        *   [`static` mode](#static-mode)
+            -   [`getLabel(options)`](#getlabeloptions)
+        *   [`dynamic` mode](#dynamic-mode)
+            -   [`getLabel(request, reply)`](#getlabelrequest-reply)
+            -   [Example](#example)
+*   [Powered Apps](#powered-apps)
+*   [Support & Contribute](#support--contribute)
+*   [License](#license)
 
 <!-- tocstop -->
 
@@ -137,12 +138,13 @@ There are more usage examples in the [`examples`](./examples) folder.
 
 ### Note
 
-The plugin internally uses the key `routeId` in the `metrics` object of the `config` object in the `Request.context` or `Reply.context` to build the label of the metric of a route.
+The plugin internally uses the `routeId` key in the `metrics` object of the `Request.routeConfig` or `Reply.request.routeConfig` object to build the label of the metric of a route.
 
 See
 
--   https://github.com/fastify/fastify/blob/master/docs/Routes.md#config
--   [request and reply context](#request-and-reply-context)
+-   https://www.fastify.io/docs/latest/Reference/Routes/#config
+-   https://www.fastify.io/docs/latest/Reference/Reply/
+-   https://www.fastify.io/docs/latest/Reference/Request/
 
 ## Metrics collected
 
@@ -271,9 +273,9 @@ The plugin uses the following hooks:
 -   `onResponse`: to measure response time
 -   `onError`: to count errors
 
-## Request and Reply context
+## Request and Reply routeConfig
 
-The plugin adds a `metrics` object to the context for convenience with the following properties:
+The plugin adds a `metrics` object to the `Request.routeConfig` and `Reply.request.routeConfig` for convenience with the following properties:
 
 -   `routeId` <`string`> The id for the current route
 -   `fastifyPrefix` <`string`> The prefix of the fastify instance registering the route, with the `/` replaced with `.` and without the `.` at the beginning.
@@ -377,7 +379,7 @@ await fastify.register(require('@immobiliarelabs/fastify-metrics'), {
         mode: 'dynamic',
         getLabel: function (request, reply) {
             const auth = request.user ? 'user' : 'anonim';
-            const { metrics } = request.context.config;
+            const { metrics } = request.routeConfig.config;
             const routesPrefix = metrics.routesPrefix
                 ? `${metrics.routesPrefix}.`
                 : '';
