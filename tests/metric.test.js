@@ -26,7 +26,7 @@ tap.test('response_size', async (t) => {
             },
             routes: {
                 responseSize: true,
-                timing: false,
+                responseTime: false,
                 requestSize: false,
                 hits: false,
                 errors: false,
@@ -66,7 +66,7 @@ tap.test('request_size', async (t) => {
             routes: {
                 requestSize: true,
                 responseSize: false,
-                timing: false,
+                responseTime: false,
                 hits: false,
                 errors: false,
             },
