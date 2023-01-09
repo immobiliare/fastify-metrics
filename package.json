@@ -1,6 +1,6 @@
 {
     "name": "@immobiliarelabs/fastify-metrics",
-    "version": "4.0.1",
+    "version": "5.0.0",
     "description": "A minimalistic and opinionated Fastify plugin that collects metrics and dispatches them to statsd",
     "main": "index.js",
     "publishConfig": {
