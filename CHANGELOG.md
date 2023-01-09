@@ -1,3 +1,16 @@
+# [5.0.0](https://github.com/immobiliare/fastify-metrics/compare/v4.0.1...v5.0.0) (2023-01-09)
+
+
+### Bug Fixes
+
+* fix fastify deprecation ([d37cae2](https://github.com/immobiliare/fastify-metrics/commit/d37cae2482867a1a56947496283e363f9897de3b))
+
+
+### BREAKING CHANGES
+
+* the plugin now relies on the `routeConfig` key instead
+of the `context.config` key to get its metadata.
+
 ## [4.0.1](https://github.com/immobiliare/fastify-metrics/compare/v4.0.0...v4.0.1) (2022-07-26)
 
 ### Bug Fixes
