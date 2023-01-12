@@ -1,9 +1,8 @@
 name: Backmerge main -> next
 
 on:
-    push:
-        branches:
-            - 'main'
+    release:
+        types: [released]
 
 jobs:
     backmerge:
