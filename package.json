@@ -80,7 +80,7 @@
     "dependencies": {
         "@dnlup/doc": "^3.1.0",
         "@dnlup/hrtime-utils": "^1.0.1",
-        "@immobiliarelabs/dats": "^3.0.0",
+        "@immobiliarelabs/dats": "^4.0.0",
         "fastify-plugin": "^4.0.0"
     },
     "volta": {
