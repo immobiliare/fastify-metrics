@@ -45,7 +45,7 @@
     },
     "license": "MIT",
     "engines": {
-        "node": ">=12.19"
+        "node": ">=18"
     },
     "devDependencies": {
         "@commitlint/cli": "^17.0.0",
@@ -80,11 +80,11 @@
     "dependencies": {
         "@dnlup/doc": "^3.1.0",
         "@dnlup/hrtime-utils": "^1.0.1",
-        "@immobiliarelabs/dats": "^3.0.0",
+        "@immobiliarelabs/dats": "^5.0.0",
         "fastify-plugin": "^4.0.0"
     },
     "volta": {
-        "node": "16.15.0",
-        "npm": "8.9.0"
+        "node": "18.15.0",
+        "npm": "9.6.2"
     }
 }
