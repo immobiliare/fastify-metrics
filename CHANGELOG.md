@@ -1,3 +1,10 @@
+# [5.1.0](https://github.com/immobiliare/fastify-metrics/compare/v5.0.0...v5.1.0) (2023-03-22)
+
+
+### Features
+
+* dats@5 node@18 npm@9 ([fc43149](https://github.com/immobiliare/fastify-metrics/commit/fc4314914af8d7bc251c18eafb904d15b1aeffae))
+
 # [5.0.0](https://github.com/immobiliare/fastify-metrics/compare/v4.0.1...v5.0.0) (2023-01-09)
 
 
