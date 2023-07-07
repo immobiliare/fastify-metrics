@@ -1,15 +1,25 @@
-# [5.0.0](https://github.com/immobiliare/fastify-metrics/compare/v4.0.1...v5.0.0) (2023-01-09)
-
+## [5.1.1](https://github.com/immobiliare/fastify-metrics/compare/v5.1.0...v5.1.1) (2023-07-07)
 
 ### Bug Fixes
 
-* fix fastify deprecation ([d37cae2](https://github.com/immobiliare/fastify-metrics/commit/d37cae2482867a1a56947496283e363f9897de3b))
+-   send error.statusCode when available if the reply.statusCode is 200 or undefined ([e06ac12](https://github.com/immobiliare/fastify-metrics/commit/e06ac12beff7a55b4e07b16bde826f544e8eedcc))
 
+# [5.1.0](https://github.com/immobiliare/fastify-metrics/compare/v5.0.0...v5.1.0) (2023-03-22)
+
+### Features
+
+-   dats@5 node@18 npm@9 ([fc43149](https://github.com/immobiliare/fastify-metrics/commit/fc4314914af8d7bc251c18eafb904d15b1aeffae))
+
+# [5.0.0](https://github.com/immobiliare/fastify-metrics/compare/v4.0.1...v5.0.0) (2023-01-09)
+
+### Bug Fixes
+
+-   fix fastify deprecation ([d37cae2](https://github.com/immobiliare/fastify-metrics/commit/d37cae2482867a1a56947496283e363f9897de3b))
 
 ### BREAKING CHANGES
 
-* the plugin now relies on the `routeConfig` key instead
-of the `context.config` key to get its metadata.
+-   the plugin now relies on the `routeConfig` key instead
+    of the `context.config` key to get its metadata.
 
 ## [4.0.1](https://github.com/immobiliare/fastify-metrics/compare/v4.0.0...v4.0.1) (2022-07-26)
 
