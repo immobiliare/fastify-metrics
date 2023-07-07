@@ -15,6 +15,7 @@ import plugin, {
     MetricsPluginAsync,
     MetricsPluginOptions,
 } from './index';
+import { FastifyRouteConfig } from 'fastify/types/route';
 
 function getFastify(options?: MetricsPluginOptions) {
     const instance = Fastify();
@@ -51,7 +52,9 @@ fastify.after((err) => {
     );
 
     fastify.get('/', async function (request, reply) {
-        expectType<FastifyContextConfig>(request.routeConfig);
+        expectType<
+            FastifyContextConfig & FastifyRouteConfig
+        >(request.routeConfig);
         expectType<{
             routeId: string;
             fastifyPrefix?: string;
