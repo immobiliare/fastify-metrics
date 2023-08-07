@@ -62,7 +62,7 @@
         "autocannon": "^7.0.0",
         "concurrently": "^8.0.1",
         "eslint": "^8.0.0",
-        "eslint-config-prettier": "^8.0.0",
+        "eslint-config-prettier": "^9.0.0",
         "eslint-plugin-node": "^11.1.0",
         "eslint-plugin-prettier": "^5.0.0-alpha.2",
         "fastify": "^4.2.1",
