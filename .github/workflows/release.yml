@@ -15,7 +15,7 @@ jobs:
               with:
                   # codfish/semantic-release-action@v2 needs 18+
                   node-version: 18
-            - uses: actions/checkout@v3
+            - uses: actions/checkout@v4
               with:
                   token: ${{ secrets.GITHUB_TOKEN }}
                   persist-credentials: false
