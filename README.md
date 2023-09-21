@@ -138,7 +138,7 @@ There are more usage examples in the [`examples`](./examples) folder.
 
 ### Note
 
-The plugin internally uses the `routeId` key in the `metrics` object of the `Request.routeConfig` or `Reply.request.routeConfig` object to build the label of the metric of a route.
+The plugin internally uses the `routeId` key in the `metrics` object of the `Request.routeOptions.config` or `Reply.request.routeOptions.config` object to build the label of the metric of a route.
 
 See
 
@@ -275,7 +275,7 @@ The plugin uses the following hooks:
 
 ## Request and Reply routeConfig
 
-The plugin adds a `metrics` object to the `Request.routeConfig` and `Reply.request.routeConfig` for convenience with the following properties:
+The plugin adds a `metrics` object to the `Request.routeOptions.config` and `Reply.request.routeOptions.config` for convenience with the following properties:
 
 -   `routeId` <`string`> The id for the current route
 -   `fastifyPrefix` <`string`> The prefix of the fastify instance registering the route, with the `/` replaced with `.` and without the `.` at the beginning.
@@ -379,7 +379,7 @@ await fastify.register(require('@immobiliarelabs/fastify-metrics'), {
         mode: 'dynamic',
         getLabel: function (request, reply) {
             const auth = request.user ? 'user' : 'anonim';
-            const { metrics } = request.routeConfig.config;
+            const { metrics } = request.routeOptions.config.config;
             const routesPrefix = metrics.routesPrefix
                 ? `${metrics.routesPrefix}.`
                 : '';

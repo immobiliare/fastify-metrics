@@ -37,8 +37,7 @@ app.register(plugin, {
     routes: {
         mode: 'dynamic',
         getLabel(request) {
-            const { metrics } = request.routeConfig;
-            const { routeId, fastifyPrefix, routesPrefix } = metrics;
+            const { routeId, fastifyPrefix, routesPrefix } = request.routeOptions.config.metrics;
             const type = request.headers['x-type'] || 'default';
             return `${fastifyPrefix ? fastifyPrefix + '.' : ''}${
                 routesPrefix ? routesPrefix + '.' : ''

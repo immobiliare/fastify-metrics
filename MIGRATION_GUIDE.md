@@ -33,8 +33,8 @@ const metrics = reply.context.config.metrics;
 ### V5
 
 ```js
-const metrics = request.routeConfig.metrics;
-const metrics = reply.request.routeConfig.metrics;
+const metrics = request.routeOptions.config.metrics;
+const metrics = reply.request.routeOptions.config.metrics;
 ```
 
 # Migrating from v1 to v2
