@@ -48,7 +48,7 @@
         "node": ">=18"
     },
     "devDependencies": {
-        "@commitlint/cli": "^17.0.0",
+        "@commitlint/cli": "^18.4.1",
         "@commitlint/config-conventional": "^17.0.0",
         "@semantic-release/changelog": "^6.0.0",
         "@semantic-release/commit-analyzer": "^10.0.1",
