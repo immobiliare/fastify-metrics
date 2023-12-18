@@ -52,15 +52,15 @@ fastify.after((err) => {
     );
 
     fastify.get('/', async function (request, reply) {
-        expectType<
-            FastifyContextConfig & FastifyRouteConfig
-        >(request.routeConfig);
+        expectType<FastifyContextConfig & FastifyRouteConfig>(
+            request.routeOptions.config
+        );
         expectType<{
             routeId: string;
             fastifyPrefix?: string;
             routesPrefix?: string;
-        }>(request.routeConfig.metrics);
-        expectType<string>(request.routeConfig.metrics.routeId);
+        }>(request.routeOptions.config.metrics);
+        expectType<string>(request.routeOptions.config.metrics.routeId);
         expectType<typeof Client.prototype.timing>(request.sendTimingMetric);
         expectType<typeof Client.prototype.counter>(request.sendCounterMetric);
         expectType<typeof Client.prototype.gauge>(request.sendGaugeMetric);
@@ -119,20 +119,22 @@ expectType(
                 expectType<FastifyInstance>(this);
                 expectType<FastifyRequest>(request);
                 expectType<string | undefined>(
-                    request.routeConfig.metrics.fastifyPrefix
+                    request.routeOptions.config.metrics.fastifyPrefix
                 );
                 expectType<string | undefined>(
-                    request.routeConfig.metrics.routesPrefix
+                    request.routeOptions.config.metrics.routesPrefix
                 );
-                expectType<string>(request.routeConfig.metrics.routeId);
+                expectType<string>(request.routeOptions.config.metrics.routeId);
                 expectType<FastifyReply>(reply);
                 expectType<string | undefined>(
-                    reply.request.routeConfig.metrics.fastifyPrefix
+                    reply.request.routeOptions.config.metrics.fastifyPrefix
                 );
                 expectType<string | undefined>(
-                    reply.request.routeConfig.metrics.routesPrefix
+                    reply.request.routeOptions.config.metrics.routesPrefix
                 );
-                expectType<string>(reply.request.routeConfig.metrics.routeId);
+                expectType<string>(
+                    reply.request.routeOptions.config.metrics.routeId
+                );
                 return 'label';
             },
         },
