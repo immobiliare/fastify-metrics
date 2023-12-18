@@ -196,8 +196,8 @@ tap.test('custom getLabel', async (t) => {
                     t.ok(typeof this.prefix === 'string');
                     t.ok(typeof this.metrics.routesPrefix === 'string');
                     for (const r of [
-                        request.routeOptions.config,
-                        reply.request.routeOptions.config,
+                        request.routeConfig,
+                        reply.request.routeConfig,
                     ]) {
                         t.ok(typeof r.metrics === 'object');
                         t.equal('string', typeof r.metrics.routeId);
@@ -304,8 +304,8 @@ tap.test('custom getLabel and custom prefix', async (t) => {
                     t.ok(typeof this.prefix === 'string');
                     t.ok(this.metrics.routesPrefix === 'prefix');
                     for (const r of [
-                        request.routeOptions.config,
-                        reply.request.routeOptions.config,
+                        request.routeConfig,
+                        reply.request.routeConfig,
                     ]) {
                         t.ok(typeof r.metrics === 'object');
                         t.equal('string', typeof r.metrics.routeId);

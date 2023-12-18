@@ -37,16 +37,16 @@ function addRoutes(app, routes) {
 async function defaultSetup(opts = {}, cb, t, prefix = '/static/test') {
     if (!cb) {
         cb = (req, res) => {
-            const fastifyPrefix = req.routeOptions.config.metrics.fastifyPrefix
-                ? `${req.routeOptions.config.metrics.fastifyPrefix}.`
-                : req.routeOptions.config.metrics.fastifyPrefix;
-            const routePrefix = req.routeOptions.config.metrics.routesPrefix
-                ? `${req.routeOptions.config.metrics.routesPrefix}.`
-                : req.routeOptions.config.metrics.routesPrefix;
+            const fastifyPrefix = req.routeConfig.metrics.fastifyPrefix
+                ? `${req.routeConfig.metrics.fastifyPrefix}.`
+                : req.routeConfig.metrics.fastifyPrefix;
+            const routePrefix = req.routeConfig.metrics.routesPrefix
+                ? `${req.routeConfig.metrics.routesPrefix}.`
+                : req.routeConfig.metrics.routesPrefix;
             t.equal(req.getMetricLabel(), res.getMetricLabel());
             t.equal(
                 req.getMetricLabel(),
-                `${fastifyPrefix}${routePrefix}${req.routeOptions.config.metrics.routeId}`
+                `${fastifyPrefix}${routePrefix}${req.routeConfig.metrics.routeId}`
             );
         };
     }

@@ -35,98 +35,98 @@ app.register(plugin, {
         namespace: 'nesting_upd_test',
     },
     routes: false,
-}).then(() => {
-    app.register(
-        async function (f) {
-            // Here we re-use the client already instantiated and track only
-            // the routes metrics.
-            f.register(plugin, {
-                client: app.metrics.client,
-                routes: {
-                    prefix: 'my-prefix-1',
-                },
-                health: false,
-            });
-            f.get(
-                '/with-metrics',
-                {
-                    config: {
-                        metrics: {
-                            routeId: 'getMetrics',
-                        },
-                    },
-                },
-                async function () {
-                    return { metrics: true };
-                }
-            );
-
-            f.post(
-                '/with-metrics',
-                {
-                    config: {
-                        metrics: {
-                            routeId: 'postMetrics',
-                        },
-                    },
-                },
-                async function () {
-                    return { metrics: true };
-                }
-            );
-
-            f.get('/no-metrics', async function () {
-                return { metrics: false };
-            });
-        },
-        { prefix: 'fastify-prefix-1' }
-    );
-
-    app.register(
-        async function (f) {
-            // Here we re-use the client already instantiated and track only
-            // the routes metrics.
-            f.register(plugin, {
-                client: app.metrics.client,
-                routes: {
-                    prefix: 'my-prefix-2',
-                },
-                health: false,
-            });
-            f.get(
-                '/with-metrics',
-                {
-                    config: {
-                        metrics: {
-                            routeId: 'getMetrics',
-                        },
-                    },
-                },
-                async function () {
-                    return { metrics: true };
-                }
-            );
-
-            f.post(
-                '/with-metrics',
-                {
-                    config: {
-                        metrics: {
-                            routeId: 'postMetrics',
-                        },
-                    },
-                },
-                async function () {
-                    return { metrics: true };
-                }
-            );
-
-            f.get('/no-metrics', async function () {
-                return { metrics: false };
-            });
-        },
-        { prefix: 'fastify-prefix-2' }
-    );
 });
+
+app.register(
+    async function (f) {
+        // Here we re-use the client already instantiated and track only
+        // the routes metrics.
+        f.register(plugin, {
+            client: app.metrics.client,
+            routes: {
+                prefix: 'my-prefix-1',
+            },
+            health: false,
+        });
+        f.get(
+            '/with-metrics',
+            {
+                config: {
+                    metrics: {
+                        routeId: 'getMetrics',
+                    },
+                },
+            },
+            async function () {
+                return { metrics: true };
+            }
+        );
+
+        f.post(
+            '/with-metrics',
+            {
+                config: {
+                    metrics: {
+                        routeId: 'postMetrics',
+                    },
+                },
+            },
+            async function () {
+                return { metrics: true };
+            }
+        );
+
+        f.get('/no-metrics', async function () {
+            return { metrics: false };
+        });
+    },
+    { prefix: 'fastify-prefix-1' }
+);
+
+app.register(
+    async function (f) {
+        // Here we re-use the client already instantiated and track only
+        // the routes metrics.
+        f.register(plugin, {
+            client: app.metrics.client,
+            routes: {
+                prefix: 'my-prefix-2',
+            },
+            health: false,
+        });
+        f.get(
+            '/with-metrics',
+            {
+                config: {
+                    metrics: {
+                        routeId: 'getMetrics',
+                    },
+                },
+            },
+            async function () {
+                return { metrics: true };
+            }
+        );
+
+        f.post(
+            '/with-metrics',
+            {
+                config: {
+                    metrics: {
+                        routeId: 'postMetrics',
+                    },
+                },
+            },
+            async function () {
+                return { metrics: true };
+            }
+        );
+
+        f.get('/no-metrics', async function () {
+            return { metrics: false };
+        });
+    },
+    { prefix: 'fastify-prefix-2' }
+);
 
 start(app, mock, fastifyPort, udpPort);

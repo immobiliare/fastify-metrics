@@ -259,14 +259,11 @@ tap.test(
         };
 
         for (const method of STATSD_METHODS) {
-            t.rejects(
-                () => {
-                    return setup({
-                        client: generateDatsClient(method),
-                    });
-                },
-                new Error(`client does not implement ${method} method.`)
-            );
+            t.rejects(() => {
+                return setup({
+                    client: generateDatsClient(method),
+                });
+            }, new Error(`client does not implement ${method} method.`));
         }
     }
 );

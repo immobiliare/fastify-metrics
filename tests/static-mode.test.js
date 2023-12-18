@@ -187,7 +187,7 @@ tap.test('custom prefix', async (t) => {
     );
 });
 
-tap.test('custom getLabel', { only: true }, async (t) => {
+tap.test('custom getLabel', async (t) => {
     const app = await setup(
         {
             client: {
@@ -225,15 +225,15 @@ tap.test('custom getLabel', { only: true }, async (t) => {
     });
     const urls = [
         '/',
-        // '/id',
-        // '/oops',
-        // '/static/test',
-        // '/static/test/id',
-        // '/static/test/oops',
-        // '/reply-decorators',
-        // '/reply-decorators/id',
-        // '/static/test/reply-decorators',
-        // '/static/test/reply-decorators/id',
+        '/id',
+        '/oops',
+        '/static/test',
+        '/static/test/id',
+        '/static/test/oops',
+        '/reply-decorators',
+        '/reply-decorators/id',
+        '/static/test/reply-decorators',
+        '/static/test/reply-decorators/id',
     ];
     for (const url of urls) {
         await app.inject({
@@ -246,50 +246,50 @@ tap.test('custom getLabel', { only: true }, async (t) => {
             /static_routes_custom_getlabel_test\.customLabel\.requests:1\|c/,
             /static_routes_custom_getlabel_test\.customLabel\.response_time:\d+(\.\d+)?\|ms/,
 
-            // /static_routes_custom_getlabel_test\.customLabel\.requests:1\|c/,
-            // /static_routes_custom_getlabel_test\.customLabel\.response_time:\d+(\.\d+)?\|ms/,
+            /static_routes_custom_getlabel_test\.customLabel\.requests:1\|c/,
+            /static_routes_custom_getlabel_test\.customLabel\.response_time:\d+(\.\d+)?\|ms/,
 
-            // /static_routes_custom_getlabel_test\.customLabel\.requests:1\|c/,
-            // /static_routes_custom_getlabel_test\.customLabel\.errors\.500:1\|c/,
-            // /static_routes_custom_getlabel_test\.customLabel\.response_time:\d+(\.\d+)?\|ms/,
+            /static_routes_custom_getlabel_test\.customLabel\.requests:1\|c/,
+            /static_routes_custom_getlabel_test\.customLabel\.errors\.500:1\|c/,
+            /static_routes_custom_getlabel_test\.customLabel\.response_time:\d+(\.\d+)?\|ms/,
 
-            // /static_routes_custom_getlabel_test\.customLabel\.requests:1\|c/,
-            // /static_routes_custom_getlabel_test\.customLabel\.response_time:\d+(\.\d+)?\|ms/,
+            /static_routes_custom_getlabel_test\.customLabel\.requests:1\|c/,
+            /static_routes_custom_getlabel_test\.customLabel\.response_time:\d+(\.\d+)?\|ms/,
 
-            // /static_routes_custom_getlabel_test\.customLabel\.requests:1\|c/,
-            // /static_routes_custom_getlabel_test\.customLabel\.response_time:\d+(\.\d+)?\|ms/,
+            /static_routes_custom_getlabel_test\.customLabel\.requests:1\|c/,
+            /static_routes_custom_getlabel_test\.customLabel\.response_time:\d+(\.\d+)?\|ms/,
 
-            // /static_routes_custom_getlabel_test\.customLabel\.requests:1\|c/,
-            // /static_routes_custom_getlabel_test\.customLabel\.errors\.500:1\|c/,
-            // /static_routes_custom_getlabel_test\.customLabel\.response_time:\d+(\.\d+)?\|ms/,
+            /static_routes_custom_getlabel_test\.customLabel\.requests:1\|c/,
+            /static_routes_custom_getlabel_test\.customLabel\.errors\.500:1\|c/,
+            /static_routes_custom_getlabel_test\.customLabel\.response_time:\d+(\.\d+)?\|ms/,
 
-            // /static_routes_custom_getlabel_test\.customLabel\.requests:1\|c/,
-            // /static_routes_custom_getlabel_test\.customLabel\.time:\d+(\.\d+)?\|ms/,
-            // /static_routes_custom_getlabel_test\.customLabel\.count:1\|c/,
-            // /static_routes_custom_getlabel_test\.customLabel\.gauge:1\|g/,
-            // /static_routes_custom_getlabel_test\.customLabel\.set:1\|s/,
-            // /static_routes_custom_getlabel_test\.customLabel\.response_time:\d+(\.\d+)?\|ms/,
+            /static_routes_custom_getlabel_test\.customLabel\.requests:1\|c/,
+            /static_routes_custom_getlabel_test\.customLabel\.time:\d+(\.\d+)?\|ms/,
+            /static_routes_custom_getlabel_test\.customLabel\.count:1\|c/,
+            /static_routes_custom_getlabel_test\.customLabel\.gauge:1\|g/,
+            /static_routes_custom_getlabel_test\.customLabel\.set:1\|s/,
+            /static_routes_custom_getlabel_test\.customLabel\.response_time:\d+(\.\d+)?\|ms/,
 
-            // /static_routes_custom_getlabel_test\.customLabel\.requests:1\|c/,
-            // /static_routes_custom_getlabel_test\.customLabel\.time:\d+(\.\d+)?\|ms/,
-            // /static_routes_custom_getlabel_test\.customLabel\.count:1\|c/,
-            // /static_routes_custom_getlabel_test\.customLabel\.gauge:1\|g/,
-            // /static_routes_custom_getlabel_test\.customLabel\.set:1\|s/,
-            // /static_routes_custom_getlabel_test\.customLabel\.response_time:\d+(\.\d+)?\|ms/,
+            /static_routes_custom_getlabel_test\.customLabel\.requests:1\|c/,
+            /static_routes_custom_getlabel_test\.customLabel\.time:\d+(\.\d+)?\|ms/,
+            /static_routes_custom_getlabel_test\.customLabel\.count:1\|c/,
+            /static_routes_custom_getlabel_test\.customLabel\.gauge:1\|g/,
+            /static_routes_custom_getlabel_test\.customLabel\.set:1\|s/,
+            /static_routes_custom_getlabel_test\.customLabel\.response_time:\d+(\.\d+)?\|ms/,
 
-            // /static_routes_custom_getlabel_test\.customLabel\.requests:1\|c/,
-            // /static_routes_custom_getlabel_test\.customLabel\.time:\d+(\.\d+)?\|ms/,
-            // /static_routes_custom_getlabel_test\.customLabel\.count:1\|c/,
-            // /static_routes_custom_getlabel_test\.customLabel\.gauge:1\|g/,
-            // /static_routes_custom_getlabel_test\.customLabel\.set:1\|s/,
-            // /static_routes_custom_getlabel_test\.customLabel\.response_time:\d+(\.\d+)?\|ms/,
+            /static_routes_custom_getlabel_test\.customLabel\.requests:1\|c/,
+            /static_routes_custom_getlabel_test\.customLabel\.time:\d+(\.\d+)?\|ms/,
+            /static_routes_custom_getlabel_test\.customLabel\.count:1\|c/,
+            /static_routes_custom_getlabel_test\.customLabel\.gauge:1\|g/,
+            /static_routes_custom_getlabel_test\.customLabel\.set:1\|s/,
+            /static_routes_custom_getlabel_test\.customLabel\.response_time:\d+(\.\d+)?\|ms/,
 
-            // /static_routes_custom_getlabel_test\.customLabel\.requests:1\|c/,
-            // /static_routes_custom_getlabel_test\.customLabel\.time:\d+(\.\d+)?\|ms/,
-            // /static_routes_custom_getlabel_test\.customLabel\.count:1\|c/,
-            // /static_routes_custom_getlabel_test\.customLabel\.gauge:1\|g/,
-            // /static_routes_custom_getlabel_test\.customLabel\.set:1\|s/,
-            // /static_routes_custom_getlabel_test\.customLabel\.response_time:\d+(\.\d+)?\|ms/,
+            /static_routes_custom_getlabel_test\.customLabel\.requests:1\|c/,
+            /static_routes_custom_getlabel_test\.customLabel\.time:\d+(\.\d+)?\|ms/,
+            /static_routes_custom_getlabel_test\.customLabel\.count:1\|c/,
+            /static_routes_custom_getlabel_test\.customLabel\.gauge:1\|g/,
+            /static_routes_custom_getlabel_test\.customLabel\.set:1\|s/,
+            /static_routes_custom_getlabel_test\.customLabel\.response_time:\d+(\.\d+)?\|ms/,
         ],
         app,
         t

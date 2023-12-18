@@ -37,7 +37,7 @@ app.register(plugin, {
     routes: {
         mode: 'dynamic',
         getLabel(request) {
-            const { metrics } = request.routeOptions.config;
+            const { metrics } = request.routeConfig;
             const { routeId, fastifyPrefix, routesPrefix } = metrics;
             const type = request.headers['x-type'] || 'default';
             return `${fastifyPrefix ? fastifyPrefix + '.' : ''}${
@@ -45,38 +45,38 @@ app.register(plugin, {
             }${type}.${routeId}`;
         },
     },
-}).then(() => {
-    app.get(
-        '/with-metrics',
-        {
-            config: {
-                metrics: {
-                    routeId: 'getMetrics',
-                },
+});
+
+app.get(
+    '/with-metrics',
+    {
+        config: {
+            metrics: {
+                routeId: 'getMetrics',
             },
         },
-        async function () {
-            return { metrics: true };
-        }
-    );
+    },
+    async function () {
+        return { metrics: true };
+    }
+);
 
-    app.post(
-        '/with-metrics',
-        {
-            config: {
-                metrics: {
-                    routeId: 'postMetrics',
-                },
+app.post(
+    '/with-metrics',
+    {
+        config: {
+            metrics: {
+                routeId: 'postMetrics',
             },
         },
-        async function () {
-            return { metrics: true };
-        }
-    );
+    },
+    async function () {
+        return { metrics: true };
+    }
+);
 
-    app.get('/no-metrics', async function () {
-        return { metrics: false };
-    });
+app.get('/no-metrics', async function () {
+    return { metrics: false };
 });
 
 start(app, mock, fastifyPort, udpPort);
