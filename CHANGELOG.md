@@ -1,3 +1,15 @@
+# [6.0.0](https://github.com/immobiliare/fastify-metrics/compare/v5.1.1...v6.0.0) (2023-12-18)
+
+
+### Bug Fixes
+
+* fastify deprecation notice ([e53acd7](https://github.com/immobiliare/fastify-metrics/commit/e53acd71409edeeadcba89284858e34765c37636))
+
+
+### BREAKING CHANGES
+
+* we now use routeOptions to store metrics data.
+
 ## [5.1.1](https://github.com/immobiliare/fastify-metrics/compare/v5.1.0...v5.1.1) (2023-07-07)
 
 

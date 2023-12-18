@@ -30,38 +30,38 @@ app.register(plugin, {
         host: `udp://127.0.0.1:${udpPort}`,
         namespace: 'default_upd_test',
     },
-});
-
-app.get(
-    '/with-metrics',
-    {
-        config: {
-            metrics: {
-                routeId: 'getMetrics',
+}).then(() => {
+    app.get(
+        '/with-metrics',
+        {
+            config: {
+                metrics: {
+                    routeId: 'getMetrics',
+                },
             },
         },
-    },
-    async function () {
-        return { metrics: true };
-    }
-);
+        async function () {
+            return { metrics: true };
+        }
+    );
 
-app.post(
-    '/with-metrics',
-    {
-        config: {
-            metrics: {
-                routeId: 'postMetrics',
+    app.post(
+        '/with-metrics',
+        {
+            config: {
+                metrics: {
+                    routeId: 'postMetrics',
+                },
             },
         },
-    },
-    async function () {
-        return { metrics: true };
-    }
-);
+        async function () {
+            return { metrics: true };
+        }
+    );
 
-app.get('/no-metrics', async function () {
-    return { metrics: false };
+    app.get('/no-metrics', async function () {
+        return { metrics: false };
+    });
 });
 
 start(app, mock, fastifyPort, udpPort);
