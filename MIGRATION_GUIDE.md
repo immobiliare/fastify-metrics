@@ -1,23 +1,47 @@
+
+
 <!-- toc -->
 
--   [Migrating from v4 to v5](#migrating-from-v4-to-v5)
-    -   [`.context.config.metrics` access](#contextconfigmetrics-access)
-        -   [V4](#v4)
-        -   [V5](#v5)
--   [Migrating from v1 to v2](#migrating-from-v1-to-v2)
-    -   [`Dats` client options](#dats-client-options)
-        -   [V1](#v1)
-        -   [V2](#v2)
-    -   [Metrics collections setup](#metrics-collections-setup)
-        -   [V1](#v1-1)
-        -   [V2](#v2-1)
-            -   [`health` metric](#health-metric)
-            -   [`routes` metrics](#routes-metrics)
-    -   [Route id configuration](#route-id-configuration)
-        -   [V1](#v1-2)
-        -   [V2](#v2-2)
+- [Migrating from v5 to v6](#migrating-from-v5-to-v6)
+  * [`.routeConfig.metrics` access](#routeconfigmetrics-access)
+    + [V5](#v5)
+    + [V6](#v6)
+- [Migrating from v4 to v5](#migrating-from-v4-to-v5)
+  * [`.context.config.metrics` access](#contextconfigmetrics-access)
+    + [V4](#v4)
+    + [V5](#v5-1)
+- [Migrating from v1 to v2](#migrating-from-v1-to-v2)
+  * [`Dats` client options](#dats-client-options)
+    + [V1](#v1)
+    + [V2](#v2)
+  * [Metrics collections setup](#metrics-collections-setup)
+    + [V1](#v1-1)
+    + [V2](#v2-1)
+      - [`health` metric](#health-metric)
+      - [`routes` metrics](#routes-metrics)
+  * [Route id configuration](#route-id-configuration)
+    + [V1](#v1-2)
+    + [V2](#v2-2)
 
 <!-- tocstop -->
+
+# Migrating from v5 to v6
+
+## `<Request>.routeConfig.metrics` access
+
+### V5
+
+```js
+const metrics = request.routeConfig.metrics;
+const metrics = reply.request.routeConfig.metrics;
+```
+
+### V6
+
+```js
+const metrics = request.routeOptions.metrics;
+const metrics = reply.request.routeOptions.metrics;
+```
 
 # Migrating from v4 to v5
 
