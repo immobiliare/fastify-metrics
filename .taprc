@@ -1,3 +1,6 @@
+# vim: set filetype=yaml :
 files:
- - tests/*.test.js
+  - tests/*.test.js
 allow-incomplete-coverage: true
+plugin:
+  - "@tapjs/sinon"

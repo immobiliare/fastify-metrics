@@ -3,7 +3,6 @@
 const tap = require('tap');
 const fastify = require('fastify');
 const { default: Dats } = require('@immobiliarelabs/dats');
-const sinon = require('sinon');
 const plugin = require('../');
 const { STATSD_METHODS } = require('../lib/util');
 
@@ -220,7 +219,7 @@ tap.test('should cleanup a custom prefix', async (t) => {
 });
 
 tap.test('should allow custom dats client', async (t) => {
-    const stub = sinon.stub();
+    const stub = t.sinon.stub();
 
     const datsMock = {
         counter: stub,
