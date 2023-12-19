@@ -1,2 +1,3 @@
-test-ignore: helpers
-nyc-arg: --exclude=tests/helpers*
+files:
+ - tests/*.test.js
+allow-incomplete-coverage: true
