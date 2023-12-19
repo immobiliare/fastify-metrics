@@ -78,7 +78,7 @@
         "typescript": "^5.0.4"
     },
     "dependencies": {
-        "@dnlup/doc": "^5.0.2",
+        "@dnlup/doc": "^5.0.3",
         "@dnlup/hrtime-utils": "^1.0.1",
         "@immobiliarelabs/dats": "^5.0.0",
         "fastify-plugin": "^4.0.0"
