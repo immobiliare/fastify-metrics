@@ -1,6 +1,6 @@
 {
     "name": "@immobiliarelabs/fastify-metrics",
-    "version": "6.0.0",
+    "version": "6.0.1",
     "description": "A minimalistic and opinionated Fastify plugin that collects metrics and dispatches them to statsd",
     "main": "index.js",
     "publishConfig": {
@@ -48,14 +48,15 @@
         "node": ">=18"
     },
     "devDependencies": {
-        "@commitlint/cli": "^17.0.0",
-        "@commitlint/config-conventional": "^17.0.0",
+        "@commitlint/cli": "^18.4.3",
+        "@commitlint/config-conventional": "^18.4.3",
         "@semantic-release/changelog": "^6.0.0",
-        "@semantic-release/commit-analyzer": "^10.0.1",
+        "@semantic-release/commit-analyzer": "^11.1.0",
         "@semantic-release/git": "^10.0.0",
         "@semantic-release/github": "^9.0.3",
-        "@semantic-release/npm": "^10.0.3",
-        "@semantic-release/release-notes-generator": "^11.0.4",
+        "@semantic-release/npm": "^11.0.2",
+        "@semantic-release/release-notes-generator": "^12.1.0",
+        "@tapjs/sinon": "^1.1.17",
         "@types/node": "^20.4.1",
         "@typescript-eslint/eslint-plugin": "^6.1.0",
         "@typescript-eslint/parser": "^6.0.0",
@@ -68,19 +69,18 @@
         "fastify": "^4.25.1",
         "husky": "^8.0.0",
         "is-ci": "^3.0.0",
-        "lint-staged": "^14.0.1",
+        "lint-staged": "^15.2.0",
         "markdown-toc": "^1.2.0",
         "nyc": "^15.1.0",
         "prettier": "^3.0.0",
-        "sinon": "^15.0.0",
-        "tap": "^16.0.0",
-        "tsd": "^0.29.0",
+        "tap": "^19.0.2",
+        "tsd": "^0.30.0",
         "typescript": "^5.0.4"
     },
     "dependencies": {
-        "@dnlup/doc": "^5.0.2",
+        "@dnlup/doc": "^5.0.3",
         "@dnlup/hrtime-utils": "^1.0.1",
-        "@immobiliarelabs/dats": "^5.0.0",
+        "@immobiliarelabs/dats": "^5.1.0",
         "fastify-plugin": "^4.0.0"
     },
     "volta": {

@@ -2,7 +2,6 @@
 
 const tap = require('tap');
 const { Sampler } = require('@dnlup/doc');
-const sinon = require('sinon');
 const { STATSD_METHODS } = require('../lib/util');
 const { setupRoutes } = require('./helpers/utils');
 
@@ -146,7 +145,7 @@ tap.test('hooks', async (t) => {
             false
         );
         t.teardown(() => server.close());
-        const spy = sinon.spy(server.log, 'error');
+        const spy = t.sinon.spy(server.log, 'error');
         server.metrics.client.socket.onError(new Error('test'));
         t.equal('test', spy.getCall(0).firstArg.message);
     });

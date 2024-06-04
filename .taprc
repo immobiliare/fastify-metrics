@@ -1,2 +1,6 @@
-test-ignore: helpers
-nyc-arg: --exclude=tests/helpers*
+# vim: set filetype=yaml :
+files:
+  - tests/*.test.js
+allow-incomplete-coverage: true
+plugin:
+  - "@tapjs/sinon"

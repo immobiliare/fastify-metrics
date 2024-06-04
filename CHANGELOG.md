@@ -1,3 +1,10 @@
+## [6.0.1](https://github.com/immobiliare/fastify-metrics/compare/v6.0.0...v6.0.1) (2024-06-04)
+
+
+### Bug Fixes
+
+* bump version ([361a32c](https://github.com/immobiliare/fastify-metrics/commit/361a32c0ae7c3a7af9285f43cf58fc48fa268534))
+
 # [6.0.0](https://github.com/immobiliare/fastify-metrics/compare/v5.1.1...v6.0.0) (2023-12-18)
 
 
