@@ -19,7 +19,7 @@ import { FastifyRouteConfig } from 'fastify/types/route';
 
 function getFastify(options?: MetricsPluginOptions) {
     const instance = Fastify();
-    return instance.register(plugin, options);
+    return instance.register(plugin, options || {});
 }
 
 expectType<FastifyPluginCallback<MetricsPluginOptions>>(plugin);
