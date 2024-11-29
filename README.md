@@ -24,7 +24,7 @@ It automatically collects Node.js process metrics along with routes stats like h
 - [Installation](#installation)
   * [`npm`](#npm)
   * [`yarn`](#yarn)
-- [Migrating from version 1](#migrating-from-version-1)
+- [Migration guides](#migration-guides)
 - [Usage](#usage)
 - [Route Configuration](#route-configuration)
   * [Note](#note)
@@ -68,8 +68,7 @@ It automatically collects Node.js process metrics along with routes stats like h
 
 | `Node.js` | `fastify` | `@immobiliarelabs/fastify-metrics` |
 | --------- | --------- | ---------------------------------- |
-| `<14`     | `3`       | `3`                                |
-| `>14`     | `4`       | `4`                                |
+| `>=20`    | `5`       | `7`                                |
 
 ## Installation
 
@@ -91,9 +90,9 @@ $ yarn add @immobiliarelabs/fastify-metrics
 $ yarn @immobiliarelabs/fastify-metrics@next
 ```
 
-## Migrating from version 1
+## Migration guides
 
-See the [migration guide](./MIGRATION_GUIDE.md) if you have to migrate from the version 1 to 2 of this plugin.
+See these [migration guides](./MIGRATION_GUIDE.md) if you have to migrate from an older version of the plugin.
 
 ## Usage
 
@@ -141,9 +140,9 @@ The plugin internally uses the `routeId` key in the `metrics` object of the `Req
 
 See
 
--   https://www.fastify.io/docs/latest/Reference/Routes/#config
--   https://www.fastify.io/docs/latest/Reference/Reply/
--   https://www.fastify.io/docs/latest/Reference/Request/
+- https://www.fastify.io/docs/latest/Reference/Routes/#config
+- https://www.fastify.io/docs/latest/Reference/Reply/
+- https://www.fastify.io/docs/latest/Reference/Request/
 
 ## Metrics collected
 
@@ -174,25 +173,25 @@ The plugin adds some decorators to both the fastify instance and the reply objec
 
 #### `metrics`
 
--   <`object`>
+- <`object`>
 
 An object containing the following properties:
 
 ##### `metrics.namespace`
 
--   <`string`>
+- <`string`>
 
 The `namespace` passed to the plugin configuration option.
 
 ##### `metrics.fastifyPrefix`
 
--   <`string`>
+- <`string`>
 
 The normalized fastify instance `prefix`.
 
 ##### `metrics.routesPrefix`
 
--   <`string`>
+- <`string`>
 
 The normalized routes `prefix` passed to the `routes.prefix` option.
 
@@ -232,33 +231,33 @@ See [hrtime-utils](https://github.com/dnlup/hrtime-utils#hrtime2stime).
 
 #### `getMetricLabel()`
 
--   **Returns** <`string`> The computed metric label of the route.
+- **Returns** <`string`> The computed metric label of the route.
 
 #### `sendTimingMetric(name[, value])`
 
--   name <`string`> The name of the metric
--   value <`number`> The value of the metric
+- name <`string`> The name of the metric
+- value <`number`> The value of the metric
 
 It sends a timing metric. It automatically prepends the route label to the passed `name`. It is just a small wrapper of the native `Dats` client method.
 
 #### `sendCounterMetric(name[, value])`
 
--   name <`string`> The name of the metric
--   value <`number`> The value of the metric
+- name <`string`> The name of the metric
+- value <`number`> The value of the metric
 
 It sends a counter metric. It automatically prepends the route label to the passed `name`. It is just a small wrapper of the native `Dats` client method.
 
 #### `sendGaugeMetric(name, value)`
 
--   name <`string`> The name of the metric
--   value <`number`> The value of the metric
+- name <`string`> The name of the metric
+- value <`number`> The value of the metric
 
 It sends a gauge metric. It automatically prepends the route label to the passed `name`. It is just a small wrapper of the native `Dats` client method.
 
 #### `sendSetMetric(name, value)`
 
--   name <`string`> The name of the metric
--   value <`number`> The value of the metric
+- name <`string`> The name of the metric
+- value <`number`> The value of the metric
 
 It sends a timing metric. It automatically prepends the route label to the passed `name`. It is just a small wrapper of the native `Dats` client method.
 
@@ -266,19 +265,19 @@ It sends a timing metric. It automatically prepends the route label to the passe
 
 The plugin uses the following hooks:
 
--   `onRoute`: to generate the route labels at startup time if `routes.mode` is set to `'static'`.
--   `onClose`: to close the [Dats](https://github.com/immobiliare/dats) instance and the [sampler](https://github.com/dnlup/doc#new-docsampleroptions) instance.
--   `onRequest`: it registers a hook to count requests and, if `routes.mode` is set to `'dynamic'`, it adds another one to generate the route label.
--   `onResponse`: to measure response time
--   `onError`: to count errors
+- `onRoute`: to generate the route labels at startup time if `routes.mode` is set to `'static'`.
+- `onClose`: to close the [Dats](https://github.com/immobiliare/dats) instance and the [sampler](https://github.com/dnlup/doc#new-docsampleroptions) instance.
+- `onRequest`: it registers a hook to count requests and, if `routes.mode` is set to `'dynamic'`, it adds another one to generate the route label.
+- `onResponse`: to measure response time
+- `onError`: to count errors
 
 ## Request and Reply routeConfig
 
 The plugin adds a `metrics` object to the `Request.routeOptions` and `Reply.request.routeOptions` for convenience with the following properties:
 
--   `routeId` <`string`> The id for the current route
--   `fastifyPrefix` <`string`> The prefix of the fastify instance registering the route, with the `/` replaced with `.` and without the `.` at the beginning.
--   `routesPrefix` <`string`> The routes prefix passed to the plugin options and without `.` at the beginning and end.
+- `routeId` <`string`> The id for the current route
+- `fastifyPrefix` <`string`> The prefix of the fastify instance registering the route, with the `/` replaced with `.` and without the `.` at the beginning.
+- `routesPrefix` <`string`> The routes prefix passed to the plugin options and without `.` at the beginning and end.
 
 These properties can be useful when using a custom [`getLabel`](routes-labels-generation-modes) function.
 
@@ -290,33 +289,33 @@ This module exports a [plugin registration function](https://github.com/fastify/
 
 > The plugin is configured with an object with the following properties
 
--   `client` <`Object`|`Client`> The statsd client [configuration](https://github.com/immobiliare/dats#new-clientoptions) object or a [`Client`](https://github.com/immobiliare/dats) instance. When using the options object, a default `onError` function is used to log with level `error` the event with the app logger.
--   `routes` <`boolean`|`Object`> Routes metrics configuration. If set to `false` it disables the collection of all the default routes metrics.
-    -   `mode` <`'static'`|`'dynamic'`> The [strategy](#routes-labels-generation-modes) to generate the route metric label.
-    -   `prefix` <`string`> The prefix to use for the routes labels (`<METRICS_NAMESPACE>.<computedPrefix>.<routeId>.*`). It defaults to `''` (no prefix).
-    -   `getLabel` <`Function`> A custom function to generate the route label. It has a different signature depending on the [mode](#routes-labels-generation-modes).
-    -   `timing` <`boolean`> Collect response timings (`<METRICS_NAMESPACE>.<computedPrefix>.<routeId>`). Default: `true`.
-    -   `requestSize` <`boolean`> Collect request size (`<METRICS_NAMESPACE>.<computedPrefix>.requests.<routeId>`). Default: `false`.
-    -   `responseSize` <`boolean`> Collect response size (`<METRICS_NAMESPACE>.<computedPrefix>.requests.<routeId>`). Default: `false`.
-    -   `hits` <`boolean`> Collect requests count (`<METRICS_NAMESPACE>.<computedPrefix>.requests.<routeId>`). Default: `true`.
-    -   `errors` <`boolean`> Collect errors count (`<METRICS_NAMESPACE>.<computedPrefix>.errors.<routeId>.<statusCode>`). Default: `true`.
--   `health` <`boolean`|`Object`> Flag to enable/disable the collection of the process health data(`<METRICS_NAMESPACE>.process.*`) or an object to configure a subset of the health metrics provided by the [sampler](https://github.com/dnlup/doc#new-docsampleroptions). Default: `true`.
-    -   `sampleInterval` <`number`> The number of milliseconds of the interval to get the metrics sample.
-    -   `eventLoopOptions` <`Object`> The options object used to configure the core [`monitorEventLoopDelay`](https://nodejs.org/docs/latest-v16.x/api/perf_hooks.html#perf_hooksmonitoreventloopdelayoptions).
+- `client` <`Object`|`Client`> The statsd client [configuration](https://github.com/immobiliare/dats#new-clientoptions) object or a [`Client`](https://github.com/immobiliare/dats) instance. When using the options object, a default `onError` function is used to log with level `error` the event with the app logger.
+- `routes` <`boolean`|`Object`> Routes metrics configuration. If set to `false` it disables the collection of all the default routes metrics.
+    - `mode` <`'static'`|`'dynamic'`> The [strategy](#routes-labels-generation-modes) to generate the route metric label.
+    - `prefix` <`string`> The prefix to use for the routes labels (`<METRICS_NAMESPACE>.<computedPrefix>.<routeId>.*`). It defaults to `''` (no prefix).
+    - `getLabel` <`Function`> A custom function to generate the route label. It has a different signature depending on the [mode](#routes-labels-generation-modes).
+    - `timing` <`boolean`> Collect response timings (`<METRICS_NAMESPACE>.<computedPrefix>.<routeId>`). Default: `true`.
+    - `requestSize` <`boolean`> Collect request size (`<METRICS_NAMESPACE>.<computedPrefix>.requests.<routeId>`). Default: `false`.
+    - `responseSize` <`boolean`> Collect response size (`<METRICS_NAMESPACE>.<computedPrefix>.requests.<routeId>`). Default: `false`.
+    - `hits` <`boolean`> Collect requests count (`<METRICS_NAMESPACE>.<computedPrefix>.requests.<routeId>`). Default: `true`.
+    - `errors` <`boolean`> Collect errors count (`<METRICS_NAMESPACE>.<computedPrefix>.errors.<routeId>.<statusCode>`). Default: `true`.
+- `health` <`boolean`|`Object`> Flag to enable/disable the collection of the process health data(`<METRICS_NAMESPACE>.process.*`) or an object to configure a subset of the health metrics provided by the [sampler](https://github.com/dnlup/doc#new-docsampleroptions). Default: `true`.
+    - `sampleInterval` <`number`> The number of milliseconds of the interval to get the metrics sample.
+    - `eventLoopOptions` <`Object`> The options object used to configure the core [`monitorEventLoopDelay`](https://nodejs.org/docs/latest-v16.x/api/perf_hooks.html#perf_hooksmonitoreventloopdelayoptions).
 
 ### Routes labels generation modes
 
 There are two different modes to generate the label for each route:
 
--   `static`
--   `dynamic`
+- `static`
+- `dynamic`
 
 ##### computedPrefix
 
 In both modes by default the plugin generates a prefix using:
 
--   the [`fastify` prefix](https://www.fastify.io/docs/latest/Reference/Server/#prefix) used to register the plugin (normalized replacing `/` with `.`), we call it `fastifyPrefix`
--   the routes prefix passed to the plugin option `routes.prefix`, we call it `routesPrefix`
+- the [`fastify` prefix](https://www.fastify.io/docs/latest/Reference/Server/#prefix) used to register the plugin (normalized replacing `/` with `.`), we call it `fastifyPrefix`
+- the routes prefix passed to the plugin option `routes.prefix`, we call it `routesPrefix`
 
 Generating a computed prefix like this:
 
@@ -326,21 +325,21 @@ Generating a computed prefix like this:
 
 In this mode a [`onRoute` hook](https://www.fastify.io/docs/latest/Reference/Hooks/#onroute) is registered in the `fastify` instance and the plugin generates a label at startup time combining the following strings:
 
--   the [`fastify` prefix](https://www.fastify.io/docs/latest/Reference/Server/#prefix) used to register the plugin, accessible via the `prefix` key of the route registration options.
--   the routes prefix passed in the plugin options, accessible as a parameter of the internal `getLabel` function.
--   the `config.metrics.routeId` string used to configure the route, acessible via the `config` key of the route registration options.
+- the [`fastify` prefix](https://www.fastify.io/docs/latest/Reference/Server/#prefix) used to register the plugin, accessible via the `prefix` key of the route registration options.
+- the routes prefix passed in the plugin options, accessible as a parameter of the internal `getLabel` function.
+- the `config.metrics.routeId` string used to configure the route, acessible via the `config` key of the route registration options.
 
 The `getLabel` function in this mode will have the following signature:
 
 ##### `getLabel(options)`
 
--   `options` [<`Object`>](https://www.fastify.io/docs/latest/Reference/Hooks/#onroute) The route registration
-    -   `config`
-        -   `metrics`
-            -   `routeId` <`string`> The id used to initialize the route.
-            -   `fastifyPrefix` <`string`> The normalized prefix of the fastify instance registering the route.
-            -   `routesPrefix` <`string`> The normalized routes prefix passed to the plugin options.
--   **Returns:** <`string`> The route label string without any `.` at the beginning or end.
+- `options` [<`Object`>](https://www.fastify.io/docs/latest/Reference/Hooks/#onroute) The route registration
+    - `config`
+        - `metrics`
+            - `routeId` <`string`> The id used to initialize the route.
+            - `fastifyPrefix` <`string`> The normalized prefix of the fastify instance registering the route.
+            - `routesPrefix` <`string`> The normalized routes prefix passed to the plugin options.
+- **Returns:** <`string`> The route label string without any `.` at the beginning or end.
 
 Pay attention to avoid returing empty strings or strings with leading and trailing `.`.
 
@@ -348,17 +347,17 @@ Pay attention to avoid returing empty strings or strings with leading and traili
 
 In this mode a [`onRequest` hook](https://www.fastify.io/docs/latest/Reference/Hooks/#onrequest) is registerd in the `fastify` instance and the plugin generates a label and attaches it to each request and reply combining the following strings:
 
--   the [`fastify` prefix](https://www.fastify.io/docs/latest/Reference/Server/#prefix) used to register the plugin, accessible via the `prefix` key of the `fastify` instance.
--   the routes prefix passed in the plugin options, accessible via the `metricsRoutesPrefix` decorator of the `fastify` instance.
--   the `config.metrics.routeId` string used to configure the route, acessible via the `config` key of the `request` or `reply` context.
+- the [`fastify` prefix](https://www.fastify.io/docs/latest/Reference/Server/#prefix) used to register the plugin, accessible via the `prefix` key of the `fastify` instance.
+- the routes prefix passed in the plugin options, accessible via the `metricsRoutesPrefix` decorator of the `fastify` instance.
+- the `config.metrics.routeId` string used to configure the route, acessible via the `config` key of the `request` or `reply` context.
 
 The `getLabel` function in this mode will have the following signature:
 
 ##### `getLabel(request, reply)`
 
--   `request`
--   `reply`
--   **Returns:** <`string`> The route label string without any `.` at the beginning or end.
+- `request`
+- `reply`
+- **Returns:** <`string`> The route label string without any `.` at the beginning or end.
 
 The `this` context of the function is bound to the fastify instance of the request. Pay attention to avoid returing empty strings or strings with leading and trailing `.`. Also, don't use arrow functions otherwhise the `this` context won't refer to the fastify instance.
 
