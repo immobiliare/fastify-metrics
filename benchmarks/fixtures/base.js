@@ -27,7 +27,7 @@ service.get(
     }
 );
 
-service.listen(3000, (error) => {
+service.listen({ port: 3000 }, (error) => {
     if (error) {
         service.log.error(error);
         process.exit(1);
