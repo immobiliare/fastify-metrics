@@ -1,3 +1,15 @@
+# [7.0.0](https://github.com/immobiliare/fastify-metrics/compare/v6.0.1...v7.0.0) (2024-11-29)
+
+
+### Features
+
+* switch to fastify v5 ([8a73762](https://github.com/immobiliare/fastify-metrics/commit/8a7376287db84107051ed87d4a6b431bbdbc7ab0))
+
+
+### BREAKING CHANGES
+
+* fastify 4 is not supported anymore and minumum required Node.js version is 20.
+
 ## [6.0.1](https://github.com/immobiliare/fastify-metrics/compare/v6.0.0...v6.0.1) (2024-06-04)
 
 
